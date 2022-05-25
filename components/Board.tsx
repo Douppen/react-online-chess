@@ -1,4 +1,4 @@
-import { ChessInstance } from "chess.js";
+import { ChessInstance, PieceType } from "chess.js";
 import { posFromSAN } from "../lib/helpers";
 import Background from "./Background";
 import Piece from "./Piece";
@@ -33,4 +33,5 @@ function Board({ gameInstance, onClickHandler }: BoardProps) {
     </div>
   );
 }
+
 export default Board;

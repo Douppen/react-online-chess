@@ -9,7 +9,7 @@ type Props = {
 
 // TODO! useState and useEffect should be used correctly below...
 const Piece = ({ color, type, pos }: Props) => {
-  const [space, setSpace] = useState(60);
+  const [space, setSpace] = useState(75);
 
   useEffect(() => {
     let sizeString = getComputedStyle(

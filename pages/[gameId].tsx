@@ -1,39 +1,49 @@
-import { Chess } from "chess.js";
+import { Chess, ChessInstance, PieceType, Square } from "chess.js";
 import { NextPage, GetServerSideProps } from "next";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Board from "../components/Board";
 import Timer from "../components/Timer";
+import { SANfromPos } from "../lib/helpers";
 
-interface Props {}
+interface Props {
+  pgn: string;
+}
 
-const Chessgame: NextPage<Props> = () => {
-  const chess = new Chess();
+const Chessgame: NextPage<Props> = ({ pgn }) => {
+  const [firstClick, setFirstClick] = useState<Vector | null>(null);
+  const chess = useMemo(() => new Chess(), [pgn]);
+
+  const onClickHandler = ({ x, y }: HandlerProps) => {
+    const clickedPiece = chess.get(SANfromPos({ x, y }));
+  };
 
   return (
     <main>
       <Board gameInstance={chess} onClickHandler={onClickHandler} />
       <Timer />
+      <div>{chess.turn()}</div>
     </main>
   );
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  let gameObject = "";
-  const clientGameId = context.params;
+  const pgn = new Chess().pgn();
 
   return {
     props: {
-      gameObject,
+      pgn,
     },
   };
 };
-
-export default Chessgame;
 
 interface HandlerProps {
   x: number;
   y: number;
 }
 
-const onClickHandler = ({ x, y }: HandlerProps) => {
-  console.log(x, y);
+type Vector = {
+  x: number;
+  y: number;
 };
+
+export default Chessgame;

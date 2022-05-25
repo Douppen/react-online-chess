@@ -23,10 +23,10 @@ export const posFromSAN = (SAN: Square): { x: number; y: number } => {
   return { x, y };
 };
 
-export const SANfromPos = ({ x, y }: { x: number; y: number }) => {
+export const SANfromPos = ({ x, y }: { x: number; y: number }): Square => {
   const letter = String.fromCharCode(x + "a".charCodeAt(0));
   const number = 8 - y;
-  const SAN = letter.concat(number.toString());
+  const SAN = letter.concat(number.toString()) as Square;
 
   return SAN;
 };
