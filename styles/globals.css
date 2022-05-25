@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --board-size: 600px;
+}
+
+.game-size {
+  width: var(--board-size);
+  height: var(--board-size);
+}

@@ -18,7 +18,15 @@ export const gamesCollection = getCollection<Chessgame>("games");
 // SAN to position object function
 export const posFromSAN = (SAN: Square): { x: number; y: number } => {
   const x = SAN.charCodeAt(0) - 97;
-  const y = Number(SAN[1]) - 1;
+  const y = 8 - Number(SAN[1]);
 
   return { x, y };
+};
+
+export const SANfromPos = ({ x, y }: { x: number; y: number }) => {
+  const letter = String.fromCharCode(x + "a".charCodeAt(0));
+  const number = 8 - y;
+  const SAN = letter.concat(number.toString());
+
+  return SAN;
 };

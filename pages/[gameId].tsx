@@ -1,13 +1,16 @@
+import { Chess } from "chess.js";
 import { NextPage, GetServerSideProps } from "next";
 import Board from "../components/Board";
 import Timer from "../components/Timer";
 
 interface Props {}
 
-const Chessgame: NextPage<Props> = ({ gameObject }) => {
+const Chessgame: NextPage<Props> = () => {
+  const chess = new Chess();
+
   return (
-    <main className="md: flex">
-      <Board />
+    <main>
+      <Board gameInstance={chess} onClickHandler={onClickHandler} />
       <Timer />
     </main>
   );
@@ -25,3 +28,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 };
 
 export default Chessgame;
+
+interface HandlerProps {
+  x: number;
+  y: number;
+}
+
+const onClickHandler = ({ x, y }: HandlerProps) => {
+  console.log(x, y);
+};
