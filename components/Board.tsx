@@ -1,11 +1,12 @@
 import { ChessInstance, PieceType } from "chess.js";
-import { posFromSAN } from "../lib/helpers";
+import { posFromSquare } from "../lib/helpers";
+import { ClickHandler } from "../types/types";
 import Background from "./Background";
 import Piece from "./Piece";
 
 type BoardProps = {
   gameInstance: ChessInstance;
-  onClickHandler: ({ x, y }: { x: number; y: number }) => void;
+  onClickHandler: ClickHandler;
 };
 
 function Board({ gameInstance, onClickHandler }: BoardProps) {
@@ -18,7 +19,7 @@ function Board({ gameInstance, onClickHandler }: BoardProps) {
         {board.map((row) => {
           return row.map((data, col) => {
             if (data === null) return;
-            const pos = posFromSAN(data.square);
+            const pos = posFromSquare(data.square);
             return (
               <Piece
                 key={col}

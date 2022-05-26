@@ -24,5 +24,12 @@ export interface Chessgame {
 }
 
 export type ChessboardArray = [
-  { square: Square; type: PieceType; color: "w" | "b" } | null | Move
+  { square: Square; type: PieceType; color: "w" | "b" }
 ];
+
+export type Vector = {
+  x: number;
+  y: number;
+};
+
+export type ClickHandler = ({ x, y }: { x: number; y: number }) => void;

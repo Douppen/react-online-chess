@@ -1,7 +1,8 @@
 import { Box } from "@mantine/core";
 import { PieceType } from "chess.js";
 import { useState } from "react";
-import { SANfromPos } from "../lib/helpers";
+import { squareFromPos } from "../lib/helpers";
+import { ClickHandler } from "../types/types";
 
 const WHITE = "#f0c37f";
 const BLACK = "#c78120";
@@ -28,15 +29,16 @@ interface TileProps extends RowProps {
 
 const Tile = ({ row, col, onClickHandler }: TileProps) => {
   const backgroundColor = (col + row) % 2 === 0 ? WHITE : BLACK;
-  const selected = false;
 
   return (
     <div
       style={{
         backgroundColor,
-        boxShadow: selected ? "0px 0px 0px 5px orange inset" : "none",
       }}
       className="relative flex-1 select-none font-medium shadow-2xl"
+      onClick={() => {
+        onClickHandler({ x: col, y: row });
+      }}
     >
       <p
         style={{
@@ -61,7 +63,7 @@ const Tile = ({ row, col, onClickHandler }: TileProps) => {
 };
 
 interface Props {
-  onClickHandler: ({ x, y }: { x: number; y: number }) => void;
+  onClickHandler: ClickHandler;
 }
 
 const Background = ({ onClickHandler }: Props) => {
