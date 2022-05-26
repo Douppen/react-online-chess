@@ -1,20 +1,27 @@
-import { ChessInstance, PieceType } from "chess.js";
+import { ChessInstance, Move, PieceType } from "chess.js";
 import { posFromSquare } from "../lib/helpers";
-import { ClickHandler } from "../types/types";
+import { ClickHandler, Vector } from "../types/types";
 import Background from "./Background";
 import Piece from "./Piece";
 
 type BoardProps = {
   gameInstance: ChessInstance;
   onClickHandler: ClickHandler;
+  clickedSquare: {
+    pos: Vector;
+    validMoves: Move[];
+  } | null;
 };
 
-function Board({ gameInstance, onClickHandler }: BoardProps) {
+function Board({ gameInstance, onClickHandler, clickedSquare }: BoardProps) {
   const board = gameInstance.board();
 
   return (
     <div className="game-size relative">
-      <Background onClickHandler={onClickHandler} />
+      <Background
+        onClickHandler={onClickHandler}
+        clickedSquare={clickedSquare}
+      />
       <div className="game-size absolute top-0 pointer-events-none">
         {board.map((row) => {
           return row.map((data, col) => {

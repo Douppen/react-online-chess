@@ -1,6 +1,7 @@
 import { Chess, ChessInstance, Move, PieceType, Square } from "chess.js";
 import { NextPage, GetServerSideProps } from "next";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import useSound from "use-sound";
 import Board from "../components/Board";
 import Timer from "../components/Timer";
 import { posFromSquare, squareFromPos } from "../lib/helpers";
@@ -11,6 +12,12 @@ interface Props {
 }
 
 const Chessgame: NextPage<Props> = ({ pgn }) => {
+  const [moveSound] = useSound("/sounds/Move.mp3");
+  const [captureSound] = useSound("/sounds/Capture.mp3");
+  const [checkSound] = useSound("/sounds/Check.mp3");
+  const [checkmateSound] = useSound("/sounds/Checkmate.mp3");
+  const [errorSound] = useSound("/sounds/Error.mp3");
+
   const [chess, setChess] = useState(new Chess());
   const [firstClick, setFirstClick] = useState<{
     pos: Vector;
@@ -43,11 +50,30 @@ const Chessgame: NextPage<Props> = ({ pgn }) => {
           return vector.x === x && vector.y === y;
         });
         if (isValidMove) {
-          const move = chess.move({
-            from: squareFromPos(firstClick.pos),
-            to: squareFromPos({ x, y }),
-          });
+          let move;
+          if (
+            (chess.turn() === "w" && y === 0) ||
+            (chess.turn() === "b" && y === 7)
+          ) {
+            move = chess.move({
+              from: squareFromPos(firstClick.pos),
+              to: squareFromPos({ x, y }),
+              promotion: "q",
+            });
+          } else {
+            move = chess.move({
+              from: squareFromPos(firstClick.pos),
+              to: squareFromPos({ x, y }),
+            });
+          }
+          if (chess.in_checkmate()) checkmateSound();
+          else if (chess.in_check()) checkSound();
+          else if (move?.flags === "c") captureSound();
+          else moveSound();
           setFirstClick(null);
+
+          // Handle move object
+          console.log(move);
         }
       } else if (clickedPiece.color === chess.turn()) {
         if (clickedPiece.color === chess.turn()) {
@@ -66,7 +92,11 @@ const Chessgame: NextPage<Props> = ({ pgn }) => {
 
   return (
     <main>
-      <Board gameInstance={chess} onClickHandler={onClickHandler} />
+      <Board
+        gameInstance={chess}
+        onClickHandler={onClickHandler}
+        clickedSquare={firstClick}
+      />
       <Timer />
       <div>{chess.turn()}</div>
     </main>
