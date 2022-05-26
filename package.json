@@ -22,6 +22,8 @@
     "next": "12.1.6",
     "react": "18.1.0",
     "react-dom": "18.1.0",
+    "react-firebase-hooks": "^5.0.3",
+    "react-icons": "^4.3.1",
     "use-sound": "^4.0.1"
   },
   "devDependencies": {

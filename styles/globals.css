@@ -10,3 +10,12 @@
   width: var(--board-size);
   height: var(--board-size);
 }
+
+@layer components {
+  .button-blue {
+    @apply bg-blue-900 shadow-2xl border-2 border-blue-900 rounded-md w-40 p-3 font-extralight hover:bg-white hover:text-blue-900 transition-all duration-500 hover:scale-105;
+  }
+  .disabled {
+    @apply bg-slate-400 text-gray-200 rounded-md w-40 p-3 font-extralight;
+  }
+}
