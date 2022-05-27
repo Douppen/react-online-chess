@@ -18,4 +18,7 @@
   .disabled {
     @apply bg-slate-400 text-gray-200 rounded-md w-40 p-3 font-extralight;
   }
+  .hamburger-item {
+    @apply text-white font-light h-full w-full text-xl hover:scale-110 hover:underline hover:text-gray-200 transition-all;
+  }
 }
