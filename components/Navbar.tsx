@@ -22,7 +22,7 @@ const Navbar = ({ opened, setOpened }: Props) => {
             />
           </div>
 
-          <h2 className="text-[28px] font-extralight text-white tracking-wide flex-[0.9] flex justify-center mr-[10vw]">
+          <h2 className="text-[28px] font-extralight text-white tracking-wide flex-[0.9] flex justify-center mr-[9.5vw]">
             <Link href="/">onlinechess</Link>
           </h2>
         </div>

@@ -5,10 +5,11 @@ type Props = {
   color: "w" | "b";
   type: PieceType;
   pos: { x: number; y: number };
+  player: "w" | "b";
 };
 
 // TODO! useState and useEffect should be used correctly below...
-const Piece = ({ color, type, pos }: Props) => {
+const Piece = ({ color, type, pos, player }: Props) => {
   const [space, setSpace] = useState(75);
 
   useEffect(() => {
@@ -24,8 +25,8 @@ const Piece = ({ color, type, pos }: Props) => {
   return (
     <img
       style={{
-        left: pos.x * space,
-        top: -pos.y * space + space * 7,
+        left: player === "w" ? pos.x * space : -pos.x * space + space * 7,
+        top: player === "w" ? -pos.y * space + space * 7 : pos.y * space,
         width: space,
       }}
       className="absolute cursor-pointer"

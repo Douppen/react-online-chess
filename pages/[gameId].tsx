@@ -3,7 +3,7 @@ import { NextPage, GetServerSideProps } from "next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import useSound from "use-sound";
 import Board from "../components/Board";
-import Timer from "../components/Timer";
+import Panel from "../components/Panel";
 import { posFromSquare, squareFromPos } from "../lib/helpers";
 import { Vector } from "../types/types";
 
@@ -17,6 +17,8 @@ const Chessgame: NextPage<Props> = ({ pgn }) => {
   const [checkSound] = useSound("/sounds/Check.mp3");
   const [checkmateSound] = useSound("/sounds/Checkmate.mp3");
   const [errorSound] = useSound("/sounds/Error.mp3");
+
+  const [player, setPlayer] = useState<"w" | "b">("b");
 
   const [chess, setChess] = useState(new Chess());
   const [firstClick, setFirstClick] = useState<{
@@ -91,14 +93,18 @@ const Chessgame: NextPage<Props> = ({ pgn }) => {
   };
 
   return (
-    <main>
+    <main
+      className={`flex items-center mt-4 ${
+        player === "b" ? "flex-col-reverse" : "flex-col"
+      }`}
+    >
       <Board
         gameInstance={chess}
         onClickHandler={onClickHandler}
         clickedSquare={firstClick}
+        player={player}
       />
-      <Timer />
-      <div>{chess.turn()}</div>
+      <Panel player={player} />
     </main>
   );
 };

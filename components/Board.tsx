@@ -13,14 +13,20 @@ type BoardProps = {
   } | null;
 };
 
-function Board({ gameInstance, onClickHandler, clickedSquare }: BoardProps) {
+function Board({
+  gameInstance,
+  onClickHandler,
+  clickedSquare,
+  player,
+}: BoardProps) {
   const board = gameInstance.board();
 
   return (
-    <div className="game-size relative">
+    <div className="game-size relative order-2">
       <Background
         onClickHandler={onClickHandler}
         clickedSquare={clickedSquare}
+        player={player}
       />
       <div className="game-size absolute top-0 pointer-events-none">
         {board.map((row) => {
@@ -33,6 +39,7 @@ function Board({ gameInstance, onClickHandler, clickedSquare }: BoardProps) {
                 type={data.type}
                 color={data.color}
                 pos={{ x: pos.x, y: 7 - pos.y }}
+                player={player}
               />
             );
           });

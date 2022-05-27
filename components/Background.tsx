@@ -11,9 +11,13 @@ interface RowProps extends Props {
   row: number;
 }
 
-const Row = ({ row, onClickHandler, clickedSquare }: RowProps) => {
+const Row = ({ row, onClickHandler, clickedSquare, player }: RowProps) => {
   return (
-    <div className="flex flex-1">
+    <div
+      className={`flex flex-1 ${
+        player === "w" ? "flex-row" : "flex-row-reverse"
+      }`}
+    >
       {new Array(8).fill(0).map((_, col) => {
         return (
           <Tile
@@ -22,6 +26,7 @@ const Row = ({ row, onClickHandler, clickedSquare }: RowProps) => {
             key={col}
             onClickHandler={onClickHandler}
             clickedSquare={clickedSquare}
+            player={player}
           />
         );
       })}
@@ -33,7 +38,13 @@ interface TileProps extends RowProps {
   col: number;
 }
 
-const Tile = ({ row, col, onClickHandler, clickedSquare }: TileProps) => {
+const Tile = ({
+  row,
+  col,
+  onClickHandler,
+  clickedSquare,
+  player,
+}: TileProps) => {
   const backgroundColor = (col + row) % 2 === 0 ? WHITE : BLACK;
 
   let selected;
@@ -50,16 +61,18 @@ const Tile = ({ row, col, onClickHandler, clickedSquare }: TileProps) => {
     <div
       style={{
         backgroundColor,
-        boxShadow: selected ? "0px 0px 10px 10px #DB8529 inset" : "none",
+        boxShadow: selected
+          ? "0px 0px 1px 35px hsl(39, 90%, 29%) inset"
+          : "0px 0px 1px 0px hsl(39, 90%, 29%) inset",
       }}
-      className="relative flex-1 select-none font-medium shadow-2xl"
+      className="relative flex-1 select-none font-medium shadow-2xl transition-all ease-out duration-300"
       onClick={() => {
         onClickHandler({ x: col, y: row });
       }}
     >
       <p
         style={{
-          opacity: col === 0 ? 1 : 0,
+          opacity: player === "b" ? (col === 7 ? 1 : 0) : col === 0 ? 1 : 0,
           color: backgroundColor === WHITE ? BLACK : WHITE,
         }}
         className="absolute top-0 left-[2px]"
@@ -68,7 +81,7 @@ const Tile = ({ row, col, onClickHandler, clickedSquare }: TileProps) => {
       </p>
       <p
         style={{
-          opacity: row === 7 ? 1 : 0,
+          opacity: player === "b" ? (row === 0 ? 1 : 0) : row === 7 ? 1 : 0,
           color: backgroundColor === BLACK ? WHITE : BLACK,
         }}
         className="absolute bottom-[-2px] right-[1px]"
@@ -87,9 +100,13 @@ interface Props {
   } | null;
 }
 
-const Background = ({ onClickHandler, clickedSquare }: Props) => {
+const Background = ({ onClickHandler, clickedSquare, player }: Props) => {
   return (
-    <div className="flex flex-col -z-10 game-size overflow-hidden rounded">
+    <div
+      className={`flex ${
+        player === "w" ? "flex-col" : "flex-col-reverse"
+      } -z-10 game-size overflow-hidden rounded`}
+    >
       {new Array(8).fill(0).map((_, row) => {
         return (
           <Row
@@ -97,6 +114,7 @@ const Background = ({ onClickHandler, clickedSquare }: Props) => {
             key={row}
             onClickHandler={onClickHandler}
             clickedSquare={clickedSquare}
+            player={player}
           />
         );
       })}
