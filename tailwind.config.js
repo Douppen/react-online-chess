@@ -7,6 +7,10 @@ module.exports = {
     extend: {
       colors: {
         primary: "hsl(51, 26%, 23%)",
+        secondary: "hsl(38, 26%, 90%)",
+        tertiary: "hsl(42, 26%, 80%)",
+        quaternary: "hsl(42, 26%, 60%)",
+        darker: "hsl(42, 26%, 10%)",
       },
     },
   },

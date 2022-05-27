@@ -30,3 +30,9 @@ export const squareFromPos = ({ x, y }: { x: number; y: number }): Square => {
 
   return SAN;
 };
+
+export function getRefinedFirebaseAuthErrorMessage(
+  errorMesssage: string
+): string {
+  return errorMesssage.replace("Firebase: ", "").replace(/\(auth.*\)\.?/, "");
+}

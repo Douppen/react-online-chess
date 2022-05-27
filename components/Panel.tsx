@@ -23,7 +23,7 @@ const Panel = ({ player }) => {
 
 const Timer = ({ time, username, player }: Props) => {
   return (
-    <div className="flex w-[600px] p-4 justify-between border-2 border-gray-200 drop-shadow-md items-center">
+    <div className="flex w-[600px] p-4 justify-between border-2 border-tertiary drop-shadow-md items-center">
       <div className="select-none flex items-center space-x-2">
         <div>{username}</div>
         {player === "b" ? (
@@ -32,7 +32,7 @@ const Timer = ({ time, username, player }: Props) => {
           <FontAwesomeIcon icon={outlineKing} />
         )}
       </div>
-      <div className="text-xl font-semibold bg-slate-200 border-2 border-slate-300 rounded-2xl px-2 select-none">
+      <div className="text-xl font-semibold text-primary bg-tertiary border-2 border-quaternary rounded-2xl px-2 select-none">
         {time}
       </div>
     </div>

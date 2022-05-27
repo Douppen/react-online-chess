@@ -24,15 +24,17 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { useContext } from "react";
 import { UserContext } from "../lib/context";
+import { getRefinedFirebaseAuthErrorMessage } from "../lib/helpers";
 
 export default function LoginForm() {
   const [type, toggle] = useToggle("Login", ["Login", "Register"]);
+  const [loading, setLoading] = useState(false);
+  const { user, username } = useContext(UserContext);
+  const [error, setError] = useState("");
   const form = useForm({
     initialValues: {
       email: "",
-      name: "",
       password: "",
-      terms: true,
     },
 
     validationRules: {
@@ -41,18 +43,73 @@ export default function LoginForm() {
     },
   });
 
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const user = useContext(UserContext);
+  const emailSignIn = async (email: string, password: string) => {
+    if (type === "Login") {
+      signInWithEmailAndPassword(auth, email, password)
+        .then((credentials) => {
+          const user = credentials.user;
+          const userDocRef = doc(db, "users", user.uid);
 
-  // ! user below might cause errors. Should be uid?
+          getDoc(userDocRef).then((doc) => {
+            if (!doc.exists()) {
+              setDoc(userDocRef, {
+                createdAt: serverTimestamp(),
+              });
+            }
+          });
+        })
+        .catch((err) => {
+          if (err.code === "auth/user-not-found") {
+            setError(
+              "This email has not been registered yet. Consider registering."
+            );
+          } else if (err.code === "auth/wrong-password") {
+            setError("Wrong password");
+          } else {
+            const message = getRefinedFirebaseAuthErrorMessage(err.message);
+            setError(message);
+          }
+        });
+    } else if (type === "Register") {
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((credentials) => {
+          const user = credentials.user;
+          const userDocRef = doc(db, "users", user.uid);
+
+          getDoc(userDocRef).then((doc) => {
+            if (!doc.exists()) {
+              setDoc(userDocRef, {
+                createdAt: serverTimestamp(),
+              });
+            }
+          });
+        })
+        .catch((err) => {
+          if (err.code === "auth/email-already-exists") {
+            setError("This email is already registered. Consider signing in.");
+          } else {
+            const message = getRefinedFirebaseAuthErrorMessage(err.message);
+            setError(message);
+          }
+        });
+    }
+  };
 
   return (
-    <div className="mx-auto w-[80vw] sm:w-[70vw] max-w-xl mt-[5vh] border-2 p-6 rounded-xl relative">
-      <LoadingOverlay visible={loading} />
+    <div className="mx-auto w-[80vw] max-w-md mt-[5vh] p-6 rounded-xl relative">
+      <LoadingOverlay
+        visible={loading}
+        overlayOpacity={0.5}
+        overlayColor={"hsl(51, 26%, 23%)"}
+        className="rounded-2xl"
+        loaderProps={{
+          size: "xl",
+          color: "hsl(41, 86%, 23%)",
+        }}
+      />
       {user ? (
         <button
-          className="bg-blue-700 text-white p-4 rounded-2xl text-xl active:scale-95 transition-all duration-75"
+          className="button text-3xl px-3"
           onClick={async () => {
             setLoading(true);
             await signOut(auth);
@@ -63,22 +120,17 @@ export default function LoginForm() {
         </button>
       ) : (
         <div>
-          <Text size="xl" weight={500} align="center">
-            {type}
-          </Text>
-
-          <div className="flex mt-4 select-none cursor-pointer active:translate-y-1 active:scale-[99%] active:bg-transparent duration-[50ms] border-2 rounded-3xl border-red-600 text-red-600 hover:bg-red-100 transition-all p-1 w-1/2 justify-center mx-auto">
+          <div className="flex mt-4 w-full hover:scale-105 select-none cursor-pointer active:translate-y-1 active:scale-[99%] active:bg-transparent border-2 rounded-3xl border-quaternary text-primary hover:bg-tertiary transition-all p-1 justify-center mx-auto">
             <button
               onClick={async () => {
                 setLoading(true);
                 await googleSignIn();
                 setLoading(false);
-                router.push("/");
               }}
               className="flex items-center justify-center gap-2"
             >
               <FcGoogle size={40} radius="xl" />
-              <Text weight={500}>Google</Text>
+              <Text weight={500}>Log in with Google</Text>
             </button>
           </div>
 
@@ -88,23 +140,21 @@ export default function LoginForm() {
             my="lg"
           />
 
-          <form onSubmit={form.onSubmit(() => {})}>
+          <form
+            onSubmit={form.onSubmit(() => {
+              emailSignIn(form.values.email, form.values.password);
+            })}
+          >
             <div className="flex flex-col mt-4 space-y-1">
-              {type === "register" && (
-                <TextInput
-                  label="Name"
-                  placeholder="Your name"
-                  value={form.values.name}
-                  onChange={(event) =>
-                    form.setFieldValue("name", event.currentTarget.value)
-                  }
-                />
-              )}
-
               <TextInput
                 required
+                styles={{
+                  input: {
+                    backgroundColor: "hsl(51, 26%, 97%)",
+                  },
+                }}
                 label="Email"
-                placeholder="hello@mantine.dev"
+                placeholder="grandmaster@gmail.com"
                 value={form.values.email}
                 onChange={(event) =>
                   form.setFieldValue("email", event.currentTarget.value)
@@ -114,6 +164,11 @@ export default function LoginForm() {
 
               <PasswordInput
                 required
+                styles={{
+                  input: {
+                    backgroundColor: "hsl(51, 26%, 97%)",
+                  },
+                }}
                 label="Password"
                 placeholder="Your password"
                 value={form.values.password}
@@ -125,17 +180,9 @@ export default function LoginForm() {
                   "Password should include at least 6 characters"
                 }
               />
-
-              {type === "register" && (
-                <Checkbox
-                  label="I accept terms and conditions"
-                  checked={form.values.terms}
-                  onChange={(event) =>
-                    form.setFieldValue("terms", event.currentTarget.checked)
-                  }
-                />
-              )}
             </div>
+
+            <p className="text-red-900 font-light text-sm mt-2">{error}</p>
 
             <div className="flex justify-between mt-6">
               <Anchor
@@ -145,14 +192,20 @@ export default function LoginForm() {
                 onClick={() => toggle()}
                 size="xs"
               >
-                {type === "register"
-                  ? "Already have an account? Login"
-                  : "Don't have an account? Register"}
+                {type === "Register" ? (
+                  <p>
+                    {" "}
+                    Already have an account?{" "}
+                    <span className="text-darker font-medium">Login</span>
+                  </p>
+                ) : (
+                  <p>
+                    Don't have an account?{" "}
+                    <span className="text-darker font-medium">Register</span>
+                  </p>
+                )}
               </Anchor>
-              <Button
-                className="text-blue-700 border-2 border-blue-700 hover:bg-blue-200 transition-all"
-                type="submit"
-              >
+              <Button className="button" type="submit">
                 {upperFirst(type)}
               </Button>
             </div>
@@ -163,21 +216,21 @@ export default function LoginForm() {
   );
 }
 
-async function googleSignIn() {
+const googleSignIn = async () => {
   await signInWithPopup(auth, googleProvider)
     .then((res) => {
       const user = res.user;
       const userDocRef = doc(db, "users", user.uid);
 
       getDoc(userDocRef).then((doc) => {
-        if (doc.exists()) return;
-        setDoc(userDocRef, {
-          displayName: user.displayName,
-          createdAt: serverTimestamp(),
-        });
+        if (!doc.exists()) {
+          setDoc(userDocRef, {
+            createdAt: serverTimestamp(),
+          });
+        }
       });
     })
     .catch((e) => {
-      console.log(e.code, e.message);
+      const errorCode = e.code;
     });
-}
+};

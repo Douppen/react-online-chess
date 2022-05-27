@@ -11,6 +11,7 @@ type BoardProps = {
     pos: Vector;
     validMoves: Move[];
   } | null;
+  player: "w" | "b";
 };
 
 function Board({

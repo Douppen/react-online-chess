@@ -18,7 +18,7 @@ const Chessgame: NextPage<Props> = ({ pgn }) => {
   const [checkmateSound] = useSound("/sounds/Checkmate.mp3");
   const [errorSound] = useSound("/sounds/Error.mp3");
 
-  const [player, setPlayer] = useState<"w" | "b">("b");
+  const [player, setPlayer] = useState<"w" | "b">("w");
 
   const [chess, setChess] = useState(new Chess());
   const [firstClick, setFirstClick] = useState<{
@@ -94,7 +94,7 @@ const Chessgame: NextPage<Props> = ({ pgn }) => {
 
   return (
     <main
-      className={`flex items-center mt-4 ${
+      className={`flex items-center mt-3 ${
         player === "b" ? "flex-col-reverse" : "flex-col"
       }`}
     >

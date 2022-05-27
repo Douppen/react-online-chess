@@ -12,13 +12,22 @@
 }
 
 @layer components {
-  .button-blue {
-    @apply bg-blue-900 shadow-2xl border-2 border-blue-900 rounded-md w-40 p-3 font-extralight hover:bg-white hover:text-blue-900 transition-all duration-500 hover:scale-105;
+  .button-primary {
+    @apply bg-primary shadow-2xl border-2 border-primary rounded-md w-40 p-3 font-extralight hover:bg-white hover:text-primary transition-all duration-500 hover:scale-105;
   }
   .disabled {
-    @apply bg-slate-400 text-gray-200 rounded-md w-40 p-3 font-extralight;
+    @apply bg-slate-400 text-gray-300 rounded-md font-normal;
   }
   .hamburger-item {
     @apply text-white font-light h-full w-full text-xl hover:scale-110 hover:underline hover:text-gray-200 transition-all;
+  }
+  .button {
+    @apply text-primary border-2 border-quaternary hover:bg-tertiary transition-all duration-200 rounded-md ease-out select-none active:bg-secondary;
+  }
+
+  body {
+    height: 100%;
+    width: 100%;
+    @apply bg-secondary;
   }
 }

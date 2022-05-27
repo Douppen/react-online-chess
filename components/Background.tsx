@@ -98,6 +98,7 @@ interface Props {
     pos: Vector;
     validMoves: Move[];
   } | null;
+  player: "w" | "b";
 }
 
 const Background = ({ onClickHandler, clickedSquare, player }: Props) => {

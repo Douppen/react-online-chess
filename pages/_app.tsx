@@ -2,18 +2,22 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import Navbar from "../components/Navbar";
 import { UserContext } from "../lib/context";
-import { auth } from "../lib/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { useState } from "react";
+import { useUserData } from "../lib/hooks";
+import ChooseUsername from "../components/ChooseUsername";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const [user] = useAuthState(auth);
+  const { user, username } = useUserData();
   const [opened, setOpened] = useState(false);
 
   return (
-    <UserContext.Provider value={user}>
+    <UserContext.Provider value={{ user, username }}>
       <Navbar opened={opened} setOpened={setOpened} />
-      <Component {...pageProps} />
+      {user !== null && (username === null || username === undefined) ? (
+        <ChooseUsername />
+      ) : (
+        <Component {...pageProps} />
+      )}
     </UserContext.Provider>
   );
 }
