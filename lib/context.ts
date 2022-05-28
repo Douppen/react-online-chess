@@ -3,5 +3,5 @@ import { createContext } from "react";
 
 export const UserContext = createContext<{
   user: User | null | undefined;
-  username: string | null;
+  username: string | null | undefined;
 }>({ user: null, username: null });

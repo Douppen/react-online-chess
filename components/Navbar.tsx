@@ -10,7 +10,7 @@ interface Props {
 }
 
 const Navbar = ({ opened, setOpened }: Props) => {
-  const { username } = useContext(UserContext);
+  const { user, username } = useContext(UserContext);
   return (
     <>
       <div className="h-14 w-screen select-none bg-primary shadow-xl">
@@ -47,18 +47,29 @@ const Navbar = ({ opened, setOpened }: Props) => {
         >
           <Link href="/">Home</Link>
         </button>
-        <button
-          className="hamburger-item"
-          onClick={() => setOpened((state) => !state)}
-        >
-          <Link href="/users/index">Profile</Link>
-        </button>
-        <button
-          className="hamburger-item"
-          onClick={() => setOpened((state) => !state)}
-        >
-          <Link href="/login">Log out</Link>
-        </button>
+        {user !== null ? (
+          <>
+            <button
+              className="hamburger-item"
+              onClick={() => setOpened((state) => !state)}
+            >
+              <Link href={`users/${username}`}>Profile</Link>
+            </button>
+            <button
+              className="hamburger-item"
+              onClick={() => setOpened((state) => !state)}
+            >
+              <Link href="/login">Sign out</Link>
+            </button>
+          </>
+        ) : (
+          <button
+            className="hamburger-item"
+            onClick={() => setOpened((state) => !state)}
+          >
+            <Link href="/login">Sign in</Link>
+          </button>
+        )}
       </div>
     </>
   );

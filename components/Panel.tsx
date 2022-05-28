@@ -2,24 +2,30 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChessKing } from "@fortawesome/free-solid-svg-icons";
 import { faChessKing as outlineKing } from "@fortawesome/free-regular-svg-icons";
 
+const Panel = ({
+  usernames,
+  time,
+}: {
+  usernames: { w: string; b: string };
+  time: string;
+}) => {
+  return (
+    <>
+      <div className="order-1">
+        <Timer time={"12:00.0"} username={usernames.b} player="b" />
+      </div>
+      <div className="order-3">
+        <Timer time={"06:00.0"} username={usernames.w} player="w" />
+      </div>
+    </>
+  );
+};
+
 interface Props {
   time: string;
   username: string;
   player: "w" | "b";
 }
-
-const Panel = ({ player }) => {
-  return (
-    <>
-      <div className="order-1">
-        <Timer time={"12:00.0"} username={"chessplayer89"} player="b" />
-      </div>
-      <div className="order-3">
-        <Timer time={"06:00.0"} username={"grandmaster123"} player="w" />
-      </div>
-    </>
-  );
-};
 
 const Timer = ({ time, username, player }: Props) => {
   return (

@@ -3,21 +3,21 @@ import { Timestamp } from "firebase/firestore";
 
 export interface Chessgame {
   fen: string;
-  gameLink: string;
   /** Initial time in minutes */
   initialTime: number;
   /** Increment time in seconds: positive or zero */
-  incrementTime: number;
+  increment: number;
   ongoing: boolean;
+  started: boolean;
   pgn: string;
   players: {
-    white: string;
-    black: string;
+    w: string;
+    b: string;
   };
   result: string | null;
   startTime: Timestamp;
   endTime: Timestamp | null;
-  timeLeft: {
+  timeLeftInMillis: {
     white: number;
     black: number;
   };

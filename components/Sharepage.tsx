@@ -1,7 +1,10 @@
 import { useClipboard } from "@mantine/hooks";
 
-type Props = {};
-function SharePage({}: Props) {
+type Props = {
+  id: string;
+};
+
+function SharePage({ id }: Props) {
   const clipboard = useClipboard({ timeout: 800 });
   return (
     <div className="flex flex-col items-center space-y-6 mt-10">
@@ -12,7 +15,7 @@ function SharePage({}: Props) {
         <p>To invite someone to play, give this URL:</p>
         <div className="flex items-center">
           <p className=" p-2 border-2 rounded-lg border-quaternary">
-            https://lichess.org/LvfBPEjLa
+            https://onlinechesss.com/{id}
           </p>
           <button
             className={`${
@@ -22,7 +25,7 @@ function SharePage({}: Props) {
             } transition-all select-none p-3 border-none rounded-lg -ml-1`}
             onClick={() => clipboard.copy("asdhoas")}
           >
-            {clipboard.copied ? "Copied" : "Click to copy"}
+            {clipboard.copied ? "Copied" : "Copy"}
           </button>
         </div>
         <p className="text-primary text-sm">
