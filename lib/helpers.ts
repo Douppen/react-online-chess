@@ -46,3 +46,21 @@ export function makeRandomId(length: number) {
   }
   return result;
 }
+
+export function convertSecondsToMinutesAndSeconds(secondsInitial: number) {
+  // Convert deciseconds to minutes and seconds
+  let minutes = Math.floor(secondsInitial / 60);
+  const seconds = padWithZeros(Math.floor(secondsInitial) - minutes * 60, 2);
+
+  minutes = padWithZeros(minutes, 2);
+
+  return { minutes, seconds };
+}
+
+export function padWithZeros(number: number, minLength: number) {
+  const numberString = number.toString();
+  if (numberString.length >= minLength) {
+    return numberString;
+  }
+  return "0".repeat(minLength - numberString.length) + numberString;
+}

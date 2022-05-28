@@ -15,12 +15,8 @@ export interface Chessgame {
     b: string;
   };
   result: string | null;
-  startTime: Timestamp;
-  endTime: Timestamp | null;
-  timeLeftInMillis: {
-    white: number;
-    black: number;
-  };
+  startTime: number;
+  endTime: number;
 }
 
 export type ChessboardArray = [

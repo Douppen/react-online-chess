@@ -3,7 +3,14 @@ import { Chess, ChessInstance, Move, PieceType, Square } from "chess.js";
 import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { NextPage, GetServerSideProps } from "next";
 import { setRevalidateHeaders } from "next/dist/server/send-payload";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import useSound from "use-sound";
 import Board from "../components/Board";
 import Panel from "../components/Panel";
@@ -17,9 +24,15 @@ interface Props {
   pgnFromServer: string;
   started: boolean;
   gameId: string;
+  increment: number;
 }
 
-const Chessgame: NextPage<Props> = ({ pgnFromServer, started, gameId }) => {
+const Chessgame: NextPage<Props> = ({
+  pgnFromServer,
+  started,
+  gameId,
+  increment,
+}) => {
   const [moveSound] = useSound("/sounds/Move.mp3");
   const [captureSound] = useSound("/sounds/Capture.mp3");
   const [checkSound] = useSound("/sounds/Check.mp3");
@@ -35,11 +48,39 @@ const Chessgame: NextPage<Props> = ({ pgnFromServer, started, gameId }) => {
     chess.load_pgn(pgnFromServer);
     return chess;
   });
+  const [gameHasStarted, setGameHasStarted] = useState(started);
+  const [gameHasEnded, setGameHasEnded] = useState(false);
+
   const [firstClick, setFirstClick] = useState<{
     pos: Vector;
     validMoves: Move[];
   } | null>(null);
-  const [gameHasStarted, setGameHasStarted] = useState(started);
+
+  const time = {
+    w: 10,
+    b: 10,
+  };
+
+  const [whiteRemainingTime, setWhiteRemainingTime] = useState(time.w);
+  const [blackRemainingTime, setBlackRemainingTime] = useState(time.b);
+
+  // ! Fix setting increment which is set two times
+  useEffect(() => {
+    if (chess.turn() === "b") {
+      setWhiteRemainingTime((current) => current + increment);
+    } else if (chess.turn() === "w") {
+      setBlackRemainingTime((current) => current + increment);
+    }
+    let intervalId = setInterval(() => {
+      console.log(chess.turn());
+      if (chess.turn() === "w") {
+        setWhiteRemainingTime((current) => current - 1);
+      } else if (chess.turn() === "b") {
+        setBlackRemainingTime((current) => current - 1);
+      }
+    }, 1000);
+    return () => clearInterval(intervalId);
+  }, [chess.pgn()]);
 
   const onClickHandler = ({ x, y }: Vector) => {
     const clickedPiece = chess.get(squareFromPos({ x, y }));
@@ -131,13 +172,14 @@ const Chessgame: NextPage<Props> = ({ pgnFromServer, started, gameId }) => {
             if (username !== players.b) {
               // User is not the one who initiated the game and the game can start with user being white
               updateDoc(gameRef, { started: true, "players.w": username });
+              setUsernames({ w: username, b: players.b });
             }
           } else if (players.b === null) {
             // White initiated game
             if (username !== players.w) {
               // User is not the one who initiated the game and the game can start with user being black
               updateDoc(gameRef, { started: true, "players.b": username });
-              setUsernames({ w: username, b: players.b });
+              setUsernames({ b: username, w: players.w });
             }
           }
         }
@@ -165,7 +207,7 @@ const Chessgame: NextPage<Props> = ({ pgnFromServer, started, gameId }) => {
   useEffect(() => {
     const gameRef = doc(gamesCollection, gameId);
     updateDoc(gameRef, { pgn: chess.pgn() });
-  }, [chess.board()]);
+  }, [chess.pgn()]);
 
   return !gameHasStarted ? (
     <SharePage id={gameId} />
@@ -181,7 +223,10 @@ const Chessgame: NextPage<Props> = ({ pgnFromServer, started, gameId }) => {
         clickedSquare={firstClick}
         player={player}
       />
-      <Panel usernames={usernames} time={""} />
+      <Panel
+        usernames={usernames}
+        timeRemaining={{ w: whiteRemainingTime, b: blackRemainingTime }}
+      />
     </main>
   );
 };
@@ -200,12 +245,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
   const pgnFromServer = gameSnap.data()!.pgn;
   const started = gameSnap.data()!.started;
+  const increment = gameSnap.data()!.increment;
 
   return {
     props: {
       pgnFromServer,
       started,
       gameId,
+      increment,
     },
   };
 };
