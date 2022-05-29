@@ -48,8 +48,9 @@ export function makeRandomId(length: number) {
 }
 
 export function convertSecondsToMinutesAndSeconds(secondsInitial: number) {
-  // Convert deciseconds to minutes and seconds
-  let minutes = Math.floor(secondsInitial / 60);
+  if (secondsInitial <= 0) return { minutes: "00", seconds: "00" };
+
+  let minutes: string | number = Math.floor(secondsInitial / 60);
   const seconds = padWithZeros(Math.floor(secondsInitial) - minutes * 60, 2);
 
   minutes = padWithZeros(minutes, 2);

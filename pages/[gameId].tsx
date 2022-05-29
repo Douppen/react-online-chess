@@ -1,8 +1,17 @@
 import { Loader } from "@mantine/core";
 import { Chess, ChessInstance, Move, PieceType, Square } from "chess.js";
-import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  onSnapshot,
+  serverTimestamp,
+  setDoc,
+  Timestamp,
+  updateDoc,
+} from "firebase/firestore";
 import { NextPage, GetServerSideProps } from "next";
 import { setRevalidateHeaders } from "next/dist/server/send-payload";
+import Router, { useRouter } from "next/router";
 import {
   useCallback,
   useContext,
@@ -13,6 +22,7 @@ import {
 } from "react";
 import useSound from "use-sound";
 import Board from "../components/Board";
+import GameEnded from "../components/GameEnded";
 import Panel from "../components/Panel";
 import SharePage from "../components/Sharepage";
 import { UserContext } from "../lib/context";
@@ -39,6 +49,7 @@ const Chessgame: NextPage<Props> = ({
   const [checkmateSound] = useSound("/sounds/Checkmate.mp3");
   const [errorSound] = useSound("/sounds/Error.mp3");
 
+  const router = useRouter();
   const { user, username } = useContext(UserContext);
   const [player, setPlayer] = useState<"w" | "b">("w");
   const [usernames, setUsernames] = useState({ w: "", b: "" });
@@ -49,41 +60,78 @@ const Chessgame: NextPage<Props> = ({
     return chess;
   });
   const [gameHasStarted, setGameHasStarted] = useState(started);
-  const [gameHasEnded, setGameHasEnded] = useState(false);
+  const [result, setResult] = useState(() => {
+    return { ended: false, winner: "", cause: "" };
+  });
+
+  // Default 5 minutes. Will be overwritten...
+  const [whiteRemainingTime, setWhiteRemainingTime] = useState(300);
+  const [blackRemainingTime, setBlackRemainingTime] = useState(300);
 
   const [firstClick, setFirstClick] = useState<{
     pos: Vector;
     validMoves: Move[];
   } | null>(null);
 
-  const time = {
-    w: 10,
-    b: 10,
+  const initiateTimer = async () => {
+    const gameRef = doc(gamesCollection, gameId);
+    const gameDoc = await getDoc(gameRef);
+    const initialTimeInMinutes = gameDoc.data()!.initialTime;
+    const initialTimeInSeconds = initialTimeInMinutes * 60;
+    const initialTimeInMillis = initialTimeInMinutes * 60 * 1000;
+
+    setBlackRemainingTime(initialTimeInSeconds);
+    setWhiteRemainingTime(initialTimeInSeconds);
+
+    const nowInMillis = Timestamp.now().toMillis();
+    const endMillis = nowInMillis + initialTimeInMillis;
+    updateDoc(gameRef, {
+      "timeTracker.w.endTimestamp": endMillis,
+      "timeTracker.b.endTimestamp": endMillis,
+      "timeTracker.w.remainingMillis": initialTimeInMillis,
+      "timeTracker.b.remainingMillis": initialTimeInMillis,
+      startTimestamp: serverTimestamp(),
+    }).catch((e) => {
+      throw new Error("Problem starting game timer: ", e.message);
+    });
   };
 
-  const [whiteRemainingTime, setWhiteRemainingTime] = useState(time.w);
-  const [blackRemainingTime, setBlackRemainingTime] = useState(time.b);
+  const handleGameEnd = async ({
+    winner,
+    cause,
+  }: {
+    winner: "b" | "w" | "draw";
+    cause: "timeout" | "resign" | "checkmate" | "draw";
+  }) => {
+    setResult({
+      ended: true,
+      cause,
+      winner,
+    });
+    const gameRef = doc(gamesCollection, gameId);
 
-  // ! Fix setting increment which is set two times
-  useEffect(() => {
-    if (chess.turn() === "b") {
-      setWhiteRemainingTime((current) => current + increment);
-    } else if (chess.turn() === "w") {
-      setBlackRemainingTime((current) => current + increment);
-    }
-    let intervalId = setInterval(() => {
-      console.log(chess.turn());
-      if (chess.turn() === "w") {
-        setWhiteRemainingTime((current) => current - 1);
-      } else if (chess.turn() === "b") {
-        setBlackRemainingTime((current) => current - 1);
-      }
-    }, 1000);
-    return () => clearInterval(intervalId);
-  }, [chess.pgn()]);
+    setDoc(
+      gameRef,
+      {
+        result: {
+          winner,
+          cause,
+          endTimestamp: serverTimestamp(),
+        },
+        ongoing: false,
+      },
+      { merge: true }
+    ).catch((e) => {
+      throw new Error("Problem setting game end on server: ", e.message);
+    });
+  };
 
+  // Handling clicks
   const onClickHandler = ({ x, y }: Vector) => {
     const clickedPiece = chess.get(squareFromPos({ x, y }));
+    if (result.ended === true) {
+      return;
+    }
 
     if (firstClick === null) {
       if (clickedPiece === null) {
@@ -127,26 +175,62 @@ const Chessgame: NextPage<Props> = ({
               to: squareFromPos({ x, y }),
             });
           }
-          if (chess.in_checkmate()) checkmateSound();
+          if (chess.in_checkmate()) {
+            checkmateSound();
+            handleGameEnd({ winner: move!.color, cause: "checkmate" });
+          } else if (chess.in_draw())
+            handleGameEnd({ winner: "draw", cause: "draw" });
           else if (chess.in_check()) checkSound();
           else if (move?.flags === "c") captureSound();
           else moveSound();
           setFirstClick(null);
+
+          // When a move is done, make a call to the database and update the time information
+          handleTimeUpdate(move);
         }
       } else if (clickedPiece.color === chess.turn()) {
-        if (clickedPiece.color === chess.turn()) {
-          // Clicked piece is of correct color
-          const validMoves = chess.moves({
-            square: squareFromPos({ x, y }),
-            verbose: true,
-          });
-          if (validMoves.length !== 0) {
-            setFirstClick({ pos: { x, y }, validMoves });
-          }
+        // Clicked piece is of correct color
+        const validMoves = chess.moves({
+          square: squareFromPos({ x, y }),
+          verbose: true,
+        });
+        if (validMoves.length !== 0) {
+          setFirstClick({ pos: { x, y }, validMoves });
         }
       }
     }
   };
+
+  // Handling client-side time countdown and checking for time running out
+  useEffect(() => {
+    let intervalId = setInterval(() => {
+      if (chess.turn() === "w") {
+        setWhiteRemainingTime((current) => {
+          if (current - 1 <= 0) {
+            clearInterval(intervalId);
+          }
+          return current - 1;
+        });
+      } else if (chess.turn() === "b") {
+        setBlackRemainingTime((current) => {
+          if (current - 1 <= 0) {
+            clearInterval(intervalId);
+          }
+          return current - 1;
+        });
+      }
+    }, 1000);
+    return () => clearInterval(intervalId);
+  }, [chess.pgn()]);
+
+  // Checking if time has run out
+  useEffect(() => {
+    if (whiteRemainingTime <= 0) {
+      handleGameEnd({ winner: "b", cause: "timeout" });
+    } else if (blackRemainingTime <= 0) {
+      handleGameEnd({ winner: "w", cause: "timeout" });
+    }
+  }, [whiteRemainingTime, blackRemainingTime]);
 
   // Handling users entering the page and initiating the game
   useEffect(() => {
@@ -164,6 +248,10 @@ const Chessgame: NextPage<Props> = ({
           } else if (players.b === username) {
             setPlayer("b");
             setUsernames({ w: players.w, b: players.b });
+          } else {
+            // User is not one of the ones who created the game
+            // Redirect to the home page
+            router.push("/");
           }
         } else {
           // One of the players has not arrived yet
@@ -187,8 +275,10 @@ const Chessgame: NextPage<Props> = ({
     }
   }, [username]);
 
+  // ! Change place of initiate game
   // Set up real time listener for the game to update when someone joins or moves a piece
   useEffect(() => {
+    initiateTimer();
     const gameRef = doc(gamesCollection, gameId);
     const unsubscribe = onSnapshot(gameRef, (doc) => {
       const data = doc.data();
@@ -201,16 +291,71 @@ const Chessgame: NextPage<Props> = ({
       }
     });
     return unsubscribe;
-  }, []);
+  }, [gameId]);
 
-  // Whenever the board changes, we should write to the database
+  // Whenever the board changes, we should write the pgn to the database
   useEffect(() => {
     const gameRef = doc(gamesCollection, gameId);
     updateDoc(gameRef, { pgn: chess.pgn() });
   }, [chess.pgn()]);
 
+  // Handle time update. This function will always be called when we, not the opponent, move a piece.
+  const handleTimeUpdate = async (moveObject: {
+    color: string;
+    from: string;
+    to: string;
+    flags: string;
+    piece: string;
+    san: string;
+  }) => {
+    const gameRef = doc(gamesCollection, gameId);
+    const gameDoc = await getDoc(gameRef);
+    const incrementInSeconds = gameDoc.data()!.increment;
+    const incrementInMillis = incrementInSeconds * 1000;
+    const nowInMillis = Timestamp.now().toMillis();
+
+    if (moveObject.color === "w") {
+      // White moved a piece. First set the endTimestamp for opponent. Then set the remaining time for white.
+      const blackRemainingMillis =
+        gameDoc.data()!.timeTracker.b.remainingMillis;
+      const blackRemainingSeconds = blackRemainingMillis / 1000;
+      setBlackRemainingTime(blackRemainingSeconds);
+
+      const blackEndTimestampMillis = nowInMillis + blackRemainingMillis!;
+      const whiteRemainingMillis =
+        gameDoc.data()!.timeTracker.w.endTimestamp -
+        nowInMillis +
+        incrementInMillis;
+      setWhiteRemainingTime(whiteRemainingMillis / 1000);
+
+      updateDoc(gameRef, {
+        "timeTracker.b.endTimestamp": blackEndTimestampMillis,
+        "timeTracker.w.remainingMillis": whiteRemainingMillis,
+      });
+    } else if (moveObject.color === "b") {
+      const whiteRemainingMillis =
+        gameDoc.data()!.timeTracker.w.remainingMillis;
+      const whiteRemainingSeconds = whiteRemainingMillis / 1000;
+      setWhiteRemainingTime(whiteRemainingSeconds);
+
+      const whiteEndTimestampMillis = nowInMillis + whiteRemainingMillis!;
+      const blackRemainingMillis =
+        gameDoc.data()!.timeTracker.b.endTimestamp -
+        nowInMillis +
+        incrementInMillis;
+      setBlackRemainingTime(blackRemainingMillis / 1000);
+
+      updateDoc(gameRef, {
+        "timeTracker.w.endTimestamp": whiteEndTimestampMillis,
+        "timeTracker.b.remainingMillis": blackRemainingMillis,
+      });
+    }
+  };
+
   return !gameHasStarted ? (
     <SharePage id={gameId} />
+  ) : result.ended === true ? (
+    <GameEnded winner={result.winner} cause={result.cause} />
   ) : (
     <main
       className={`flex items-center mt-3 ${

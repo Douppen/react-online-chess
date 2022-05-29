@@ -2,8 +2,7 @@ import { Move, PieceType, Square } from "chess.js";
 import { Timestamp } from "firebase/firestore";
 
 export interface Chessgame {
-  fen: string;
-  /** Initial time in minutes */
+  /** Initial time in seconds */
   initialTime: number;
   /** Increment time in seconds: positive or zero */
   increment: number;
@@ -14,9 +13,22 @@ export interface Chessgame {
     w: string;
     b: string;
   };
-  result: string | null;
-  startTime: number;
-  endTime: number;
+  result: {
+    winner: "w" | "b" | "draw" | "";
+    cause: "resign" | "timeout" | "checkmate" | "draw";
+    endTimestamp: Timestamp | null;
+  };
+  startTimestamp: Timestamp;
+  timeTracker: {
+    w: {
+      endTimestamp: number;
+      remainingMillis: number;
+    };
+    b: {
+      endTimestamp: number;
+      remainingMillis: number;
+    };
+  };
 }
 
 export type ChessboardArray = [
