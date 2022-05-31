@@ -25,9 +25,26 @@
     @apply text-primary border-2 border-quaternary hover:bg-tertiary transition-all duration-200 rounded-md ease-out select-none active:bg-secondary;
   }
 
-  body {
+  html {
     height: 100%;
     width: 100%;
-    @apply bg-white;
+  }
+}
+
+html {
+  background: linear-gradient(55deg, #693c0f, #0b1c2d, #0c1f32, #be890e);
+  background-size: 200% 500%;
+}
+
+@keyframes AnimationName {
+  0% {
+    background-position: 40% 94%;
+  }
+
+  50% {
+    background-position: 50% 37%;
+  }
+  100% {
+    background-position: 40% 94%;
   }
 }
