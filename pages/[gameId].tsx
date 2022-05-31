@@ -42,6 +42,7 @@ const Chessgame: NextPage<Props> = ({
   started,
   gameId,
   increment,
+  resultServer,
 }) => {
   const [moveSound] = useSound("/sounds/Move.mp3");
   const [captureSound] = useSound("/sounds/Capture.mp3");
@@ -61,7 +62,11 @@ const Chessgame: NextPage<Props> = ({
   });
   const [gameHasStarted, setGameHasStarted] = useState(started);
   const [result, setResult] = useState(() => {
-    return { ended: false, winner: "", cause: "" };
+    return {
+      ended: resultServer !== null,
+      winner: resultServer?.winner,
+      cause: resultServer?.cause,
+    };
   });
 
   // Default 5 minutes. Will be overwritten...
@@ -260,14 +265,19 @@ const Chessgame: NextPage<Props> = ({
             if (username !== players.b) {
               // User is not the one who initiated the game and the game can start with user being white
               updateDoc(gameRef, { started: true, "players.w": username });
+              setPlayer("w");
               setUsernames({ w: username, b: players.b });
+              initiateTimer();
             }
           } else if (players.b === null) {
             // White initiated game
             if (username !== players.w) {
               // User is not the one who initiated the game and the game can start with user being black
               updateDoc(gameRef, { started: true, "players.b": username });
+              setPlayer("b");
+
               setUsernames({ b: username, w: players.w });
+              initiateTimer();
             }
           }
         }
@@ -275,10 +285,8 @@ const Chessgame: NextPage<Props> = ({
     }
   }, [username]);
 
-  // ! Change place of initiate game
   // Set up real time listener for the game to update when someone joins or moves a piece
   useEffect(() => {
-    initiateTimer();
     const gameRef = doc(gamesCollection, gameId);
     const unsubscribe = onSnapshot(gameRef, (doc) => {
       const data = doc.data();
@@ -291,7 +299,7 @@ const Chessgame: NextPage<Props> = ({
       }
     });
     return unsubscribe;
-  }, [gameId]);
+  }, [gameId, usernames]);
 
   // Whenever the board changes, we should write the pgn to the database
   useEffect(() => {
@@ -391,6 +399,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const pgnFromServer = gameSnap.data()!.pgn;
   const started = gameSnap.data()!.started;
   const increment = gameSnap.data()!.increment;
+  const result = gameSnap.data()!.result;
+  const resultServer = { cause: result?.cause, winner: result?.winner };
 
   return {
     props: {
@@ -398,6 +408,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       started,
       gameId,
       increment,
+      resultServer,
     },
   };
 };

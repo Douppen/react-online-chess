@@ -57,7 +57,6 @@ const Home: NextPage = () => {
       gameDoc = await getDoc(gameRef);
     }
     setDoc(gameRef, {
-      fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
       initialTime: time,
       increment: increment,
       ongoing: true,
@@ -70,22 +69,13 @@ const Home: NextPage = () => {
       result: null,
       startTime: serverTimestamp(),
       endTime: null,
-      timeLeftInMillis: {
-        [color]: time * 60 * 1000,
-        [opponentColor]: time * 60 * 1000,
-      },
+      timeTracker: null,
     });
     router.push(`${gameId}`);
   };
 
   return (
     <div>
-      <Head>
-        <title>Chess Online</title>
-        <meta name="description" content="Online chess game" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
       <Modal
         opened={opened}
         onClose={() => setOpened(false)}
@@ -201,7 +191,7 @@ const Home: NextPage = () => {
           </button>
         </div>
       </Modal>
-      <main className="bg-secondary text-white select-none mx-auto">
+      <main className="text-white select-none mx-auto">
         <div className="flex flex-col space-y-6 justify-center items-center pt-[20vh] pb-[30vh]">
           <button
             disabled={!user}

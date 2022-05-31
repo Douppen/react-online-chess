@@ -13,7 +13,7 @@
 
 @layer components {
   .button-primary {
-    @apply bg-primary shadow-2xl border-2 border-primary rounded-md w-40 p-3 font-extralight hover:bg-white hover:text-primary transition-all duration-500 hover:scale-105;
+    @apply bg-primary shadow-2xl border-2 border-primary rounded-md w-40 p-3 font-medium hover:bg-white hover:text-primary transition-all duration-500 hover:scale-105;
   }
   .disabled {
     @apply bg-slate-400 text-gray-300 rounded-md font-normal;
@@ -28,6 +28,6 @@
   body {
     height: 100%;
     width: 100%;
-    @apply bg-secondary;
+    @apply bg-white;
   }
 }

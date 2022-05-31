@@ -13,22 +13,23 @@ const Navbar = ({ opened, setOpened }: Props) => {
   const { user, username } = useContext(UserContext);
   return (
     <>
-      <div className="h-14 w-screen select-none bg-primary shadow-xl">
+      <div className="h-14 w-screen select-none shadow-xl">
         <div className="flex items-center h-full justify-center p-1">
           <div className="pt-2 ml-3 flex-[0.3]">
             <Burger
               opened={opened}
               size="md"
-              color={"white"}
+              color={"hsl(28, 40%, 30%)"}
               onClick={() => setOpened((state) => !state)}
             />
           </div>
-
-          <h2 className="text-[28px] font-extralight text-white tracking-wide flex-[0.4] flex justify-center">
-            <Link href="/">onlinechess</Link>
-          </h2>
+          <div className="flex items-center space-x-1">
+            <h2 className="text-[24px] text-primary font-medium tracking-wide flex-[0.4] flex justify-center">
+              <Link href="/">Onlinechesss</Link>
+            </h2>
+          </div>
           <div className="flex-[0.3] flex h-full items-center justify-end pr-1 pt-1">
-            <p className="text-white font-extralight">{username}</p>
+            <p className="text-primary font-extralight">{username}</p>
           </div>
         </div>
       </div>
