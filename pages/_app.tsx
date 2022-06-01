@@ -8,6 +8,7 @@ import ChooseUsername from "../components/ChooseUsername";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import Head from "next/head";
 import BottomNav from "../components/BottomNav";
+import Footer from "../components/Footer";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const { user, username } = useUserData();
@@ -30,9 +31,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <ErrorBoundary>
         <UserContext.Provider value={{ user, username }}>
-          <div className="max-w-5xl m-auto">
+          <Navbar opened={opened} setOpened={setOpened} />
+          <div className="max-w-6xl m-auto lg:px-12">
             <div className="flex flex-col h-screen">
-              <Navbar opened={opened} setOpened={setOpened} />
               <main className="flex-1 p-8 pb-32 mt-8">
                 <Component {...pageProps} />
               </main>
@@ -41,6 +42,7 @@ function MyApp({ Component, pageProps }: AppProps) {
               </div>
             </div>
           </div>
+          <Footer />
         </UserContext.Provider>
       </ErrorBoundary>
     </>

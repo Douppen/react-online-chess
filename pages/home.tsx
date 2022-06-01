@@ -15,7 +15,7 @@ import { NextPage } from "next";
 const Home: NextPage = () => {
   return (
     <main>
-      <h1 className="mb-6 text-4xl font-medium">Play</h1>
+      <h1 className="mb-6 text-4xl font-medium lg:text-7xl">Play</h1>
       <p className="mb-4 text-xl font-medium">Quick pairing</p>
       <div className="flex mb-10 space-x-2 overflow-x-auto hide-scroll">
         <SquareButton
@@ -62,7 +62,7 @@ const Home: NextPage = () => {
         />
       </div>
       <p className="mb-4 text-xl font-medium">New game</p>
-      <div className="flex flex-col space-y-4">
+      <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
         <RectangleButton
           bigText="Custom game"
           smallText="Random opponent"
@@ -126,7 +126,7 @@ const Home: NextPage = () => {
           <button className="bg-complementary font-bold rounded-lg p-2 text-black flex-1 hover:bg-[#ea7861]">
             Create account
           </button>
-          <button className="flex-1 font-medium hover:underline underline-offset-[6px]">
+          <button className="flex-1 font-medium hover:underline decoration-complementary underline-offset-[6px]">
             Log in
           </button>
         </div>
