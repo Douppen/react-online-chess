@@ -7,6 +7,7 @@ import { useUserData } from "../lib/hooks";
 import ChooseUsername from "../components/ChooseUsername";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import Head from "next/head";
+import BottomNav from "../components/BottomNav";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const { user, username } = useUserData();
@@ -29,12 +30,17 @@ function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <ErrorBoundary>
         <UserContext.Provider value={{ user, username }}>
-          <Navbar opened={opened} setOpened={setOpened} />
-          {user !== null && username === undefined ? (
-            <ChooseUsername />
-          ) : (
-            <Component {...pageProps} />
-          )}
+          <div className="max-w-5xl m-auto">
+            <div className="flex flex-col h-screen">
+              <Navbar opened={opened} setOpened={setOpened} />
+              <main className="flex-1 p-8 pb-32 mt-8">
+                <Component {...pageProps} />
+              </main>
+              <div className="md:hidden">
+                <BottomNav />
+              </div>
+            </div>
+          </div>
         </UserContext.Provider>
       </ErrorBoundary>
     </>

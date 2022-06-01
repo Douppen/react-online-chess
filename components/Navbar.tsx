@@ -3,6 +3,7 @@ import { NextPage } from "next";
 import Link from "next/link";
 import { Dispatch, SetStateAction, useContext } from "react";
 import { UserContext } from "../lib/context";
+import { Link as CustomLink } from "./Link";
 
 interface Props {
   opened: boolean;
@@ -13,9 +14,9 @@ const Navbar = ({ opened, setOpened }: Props) => {
   const { user, username } = useContext(UserContext);
   return (
     <>
-      <div className="h-14 w-screen text-contrast">
-        <div className="flex items-center h-full justify-center p-1">
-          <div className="pt-2 ml-3 flex-[0.3]">
+      <div className="w-screen h-14 pt-4 text-contrast">
+        <div className="flex items-center h-full p-1">
+          <div className="pt-2 ml-3">
             <Burger
               opened={opened}
               size="md"
@@ -25,17 +26,60 @@ const Navbar = ({ opened, setOpened }: Props) => {
           </div>
           <div className="flex items-center space-x-1">
             <h2 className="text-[24px] font-medium tracking-wide flex-[0.4] flex justify-center">
-              <Link href="/">Onlinechesss</Link>
+              <Link href="/">onlinechesss</Link>
             </h2>
           </div>
-          <div className="flex-[0.3] flex h-full items-center justify-end pr-1 pt-1">
-            <p className=" font-extralight">{username}</p>
+          <div className="hidden md:flex space-x-4 font-medium mx-12">
+            <CustomLink href={"/home"}>
+              {({ isActive }) => (
+                <a
+                  className={`${
+                    isActive ? "underline" : ""
+                  } underline-offset-4 decoration-complementary p-2`}
+                >
+                  Play
+                </a>
+              )}
+            </CustomLink>
+            <CustomLink href={"/train"}>
+              {({ isActive }) => (
+                <a
+                  className={`${
+                    isActive ? "underline" : ""
+                  } underline-offset-4 decoration-complementary p-2`}
+                >
+                  Train
+                </a>
+              )}
+            </CustomLink>
+            <CustomLink href={"/news"}>
+              {({ isActive }) => (
+                <a
+                  className={`${
+                    isActive ? "underline" : ""
+                  } underline-offset-4 decoration-complementary p-2`}
+                >
+                  News
+                </a>
+              )}
+            </CustomLink>
+            <CustomLink href={"/users"}>
+              {({ isActive }) => (
+                <a
+                  className={`${
+                    isActive ? "underline" : ""
+                  } underline-offset-4 decoration-complementary p-2`}
+                >
+                  Profile
+                </a>
+              )}
+            </CustomLink>
           </div>
         </div>
       </div>
 
       <div
-        className="w-screen shadow-2xl absolute p-4 z-30 bg-primary flex flex-col overflow-hidden space-y-6 transition-all ease-in-out duration-300"
+        className="absolute z-30 flex flex-col w-screen p-4 space-y-6 overflow-hidden transition-all duration-300 ease-in-out shadow-2xl bg-primary"
         style={{
           height: opened ? "170px" : "0px",
           padding: opened ? "16px" : "0px",

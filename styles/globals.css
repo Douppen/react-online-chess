@@ -13,27 +13,41 @@
 
 @layer components {
   .button-primary {
-    @apply bg-primary shadow-2xl border-2 border-primary rounded-md w-40 p-3 font-medium hover:bg-white hover:text-primary transition-all duration-500 hover:scale-105;
+    @apply w-40 p-3 font-medium transition-all duration-500 border-2 rounded-md shadow-2xl bg-primary border-primary hover:bg-white hover:text-primary hover:scale-105;
   }
   .disabled {
-    @apply bg-slate-400 text-gray-300 rounded-md font-normal;
+    @apply font-normal text-gray-300 rounded-md bg-slate-400;
   }
   .hamburger-item {
-    @apply text-white font-light h-full w-full text-xl hover:scale-110 hover:underline hover:text-gray-200 transition-all;
+    @apply w-full h-full text-xl font-light text-white transition-all hover:scale-110 hover:underline hover:text-gray-200;
   }
   .button {
-    @apply text-primary border-2 border-quaternary hover:bg-tertiary transition-all duration-200 rounded-md ease-out select-none active:bg-secondary;
+    @apply transition-all duration-200 ease-out border-2 rounded-md select-none text-primary border-quaternary hover:bg-tertiary active:bg-secondary;
+  }
+
+  .hide-scroll::-webkit-scrollbar {
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    display: none;
+  }
+
+  .hide-scroll {
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .example {
+      -ms-overflow-style: none; /* IE and Edge */
+      scrollbar-width: none; /* Firefox */
+    }
   }
 
   html {
     height: 100%;
     width: 100%;
+    @apply text-white;
   }
 }
 
 html {
-  background: linear-gradient(55deg, #693c0f, #0b1c2d, #0c1f32, #be890e);
-  background-size: 200% 500%;
+  background: linear-gradient(55deg, #693c0f, #0b272d, #061d23, #be890e);
+  background-size: 200% 300%;
 }
 
 @keyframes AnimationName {
