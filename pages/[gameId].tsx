@@ -42,7 +42,6 @@ const Chessgame: NextPage<Props> = ({
   started,
   gameId,
   increment,
-  resultServer,
 }) => {
   const [moveSound] = useSound("/sounds/Move.mp3");
   const [captureSound] = useSound("/sounds/Capture.mp3");
@@ -61,13 +60,6 @@ const Chessgame: NextPage<Props> = ({
     return chess;
   });
   const [gameHasStarted, setGameHasStarted] = useState(started);
-  const [result, setResult] = useState(() => {
-    return {
-      ended: resultServer !== null,
-      winner: resultServer?.winner,
-      cause: resultServer?.cause,
-    };
-  });
 
   // Default 5 minutes. Will be overwritten...
   const [whiteRemainingTime, setWhiteRemainingTime] = useState(300);
@@ -101,42 +93,9 @@ const Chessgame: NextPage<Props> = ({
     });
   };
 
-  const handleGameEnd = async ({
-    winner,
-    cause,
-  }: {
-    winner: "b" | "w" | "draw";
-    cause: "timeout" | "resign" | "checkmate" | "draw";
-  }) => {
-    setResult({
-      ended: true,
-      cause,
-      winner,
-    });
-    const gameRef = doc(gamesCollection, gameId);
-
-    setDoc(
-      gameRef,
-      {
-        result: {
-          winner,
-          cause,
-          endTimestamp: serverTimestamp(),
-        },
-        ongoing: false,
-      },
-      { merge: true }
-    ).catch((e) => {
-      throw new Error("Problem setting game end on server: ", e.message);
-    });
-  };
-
   // Handling clicks
   const onClickHandler = ({ x, y }: Vector) => {
     const clickedPiece = chess.get(squareFromPos({ x, y }));
-    if (result.ended === true) {
-      return;
-    }
 
     if (firstClick === null) {
       if (clickedPiece === null) {
@@ -362,8 +321,6 @@ const Chessgame: NextPage<Props> = ({
 
   return !gameHasStarted ? (
     <SharePage id={gameId} />
-  ) : result.ended === true ? (
-    <GameEnded winner={result.winner} cause={result.cause} />
   ) : (
     <main
       className={`flex items-center mt-3 ${
@@ -399,8 +356,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const pgnFromServer = gameSnap.data()!.pgn;
   const started = gameSnap.data()!.started;
   const increment = gameSnap.data()!.increment;
-  const result = gameSnap.data()!.result;
-  const resultServer = { cause: result?.cause, winner: result?.winner };
 
   return {
     props: {
@@ -408,7 +363,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       started,
       gameId,
       increment,
-      resultServer,
     },
   };
 };

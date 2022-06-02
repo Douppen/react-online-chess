@@ -25,7 +25,7 @@ const Navbar = ({ opened, setOpened }: Props) => {
               </Link>
             </div>
             <div className="hidden sm:flex space-x-4 font-medium mx-12">
-              <CustomLink href={"/home"}>
+              <CustomLink href={"/"}>
                 {({ isActive }) => (
                   <button
                     className={`${

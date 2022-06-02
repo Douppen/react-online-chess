@@ -9,6 +9,7 @@ import {
   Checkbox,
   Anchor,
   LoadingOverlay,
+  PasswordInputProps,
 } from "@mantine/core";
 
 import { FcGoogle } from "react-icons/fc";
@@ -25,6 +26,7 @@ import { useState } from "react";
 import { useContext } from "react";
 import { UserContext } from "../lib/context";
 import { getRefinedFirebaseAuthErrorMessage } from "../lib/helpers";
+import CustomTextInput from "../components/CustomTextInput";
 
 export default function LoginForm() {
   const [type, toggle] = useToggle("Login", ["Login", "Register"]);
@@ -120,7 +122,7 @@ export default function LoginForm() {
         </button>
       ) : (
         <div>
-          <div className="flex mt-4 w-full hover:scale-105 select-none cursor-pointer active:translate-y-1 active:scale-[99%] active:bg-transparent border-2 rounded-3xl border-quaternary text-primary hover:bg-tertiary transition-all p-1 justify-center mx-auto">
+          <div className="flex mt-4 w-full select-none cursor-pointer rounded-3xl text-contrast bg-darklight transition-all p-1 justify-center mx-auto hover:ring-1 ring-darksquare">
             <button
               onClick={async () => {
                 setLoading(true);
@@ -129,7 +131,7 @@ export default function LoginForm() {
               }}
               className="flex items-center justify-center gap-2"
             >
-              <FcGoogle size={40} radius="xl" />
+              <FcGoogle size={36} radius="xl" />
               <Text weight={500}>Log in with Google</Text>
             </button>
           </div>
@@ -146,15 +148,9 @@ export default function LoginForm() {
             })}
           >
             <div className="flex flex-col mt-4 space-y-1">
-              <TextInput
+              <CustomTextInput
                 required
-                styles={{
-                  input: {
-                    backgroundColor: "hsl(51, 26%, 97%)",
-                  },
-                }}
                 label="Email"
-                placeholder="grandmaster@gmail.com"
                 value={form.values.email}
                 onChange={(event) =>
                   form.setFieldValue("email", event.currentTarget.value)
@@ -162,15 +158,9 @@ export default function LoginForm() {
                 error={form.errors.email && "Invalid email"}
               />
 
-              <PasswordInput
+              <CustomPasswordInput
                 required
-                styles={{
-                  input: {
-                    backgroundColor: "hsl(51, 26%, 97%)",
-                  },
-                }}
                 label="Password"
-                placeholder="Your password"
                 value={form.values.password}
                 onChange={(event) =>
                   form.setFieldValue("password", event.currentTarget.value)
@@ -182,7 +172,7 @@ export default function LoginForm() {
               />
             </div>
 
-            <p className="text-red-900 font-light text-sm mt-2">{error}</p>
+            <p className="text-red-600 font-light text-sm mt-2">{error}</p>
 
             <div className="flex justify-between mt-6">
               <Anchor
@@ -196,18 +186,18 @@ export default function LoginForm() {
                   <p>
                     {" "}
                     Already have an account?{" "}
-                    <span className="text-darker font-medium">Login</span>
+                    <span className="text-description font-medium">Login</span>
                   </p>
                 ) : (
                   <p>
                     Don't have an account?{" "}
-                    <span className="text-darker font-medium">Register</span>
+                    <span className="text-description font-medium">
+                      Register
+                    </span>
                   </p>
                 )}
               </Anchor>
-              <Button className="button" type="submit">
-                {upperFirst(type)}
-              </Button>
+              <button className="orangebutton px-6">Log in</button>
             </div>
           </form>
         </div>
@@ -234,3 +224,20 @@ const googleSignIn = async () => {
       const errorCode = e.code;
     });
 };
+
+function CustomPasswordInput({ ...rest }: PasswordInputProps) {
+  return (
+    <PasswordInput
+      {...rest}
+      variant="unstyled"
+      classNames={{
+        label: "text-contrast",
+        input:
+          "bg-darklight p-2 focus:bg-modalbg placeholder:text-slate-500 text-lg font-light focus:ring-indigo-400 focus:ring-2 text-white pl-6 px-2 h-10 transition-all rounded-lg hover:ring-1 ring-darksquare",
+        innerInput:
+          "bg-darklight p-2 focus:bg-modalbg placeholder:text-slate-500 sm:text-lg font-light text-white pl-6 px-2 h-10 transition-all rounded-l-lg hover:ring-1 ring-darksquare",
+        visibilityToggle: "text-white hover:text-dark",
+      }}
+    />
+  );
+}

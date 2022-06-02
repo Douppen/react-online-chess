@@ -14,10 +14,10 @@ const Panel = ({
 }) => {
   return (
     <>
-      <div className="order-1">
+      <div className="order-1 text-description">
         <Timer time={timeRemaining.b} username={usernames.b} player="b" />
       </div>
-      <div className="order-3">
+      <div className="order-3 text-description">
         <Timer time={timeRemaining.w} username={usernames.w} player="w" />
       </div>
     </>
@@ -25,23 +25,18 @@ const Panel = ({
 };
 
 interface Props {
-  time: TimestampProps;
+  time: any;
   username: string;
   player: "w" | "b";
 }
 
 const Timer = ({ time, username, player }: Props) => {
   return (
-    <div className="flex w-[600px] p-4 justify-between border-2 border-tertiary drop-shadow-md items-center">
+    <div className="flex w-[600px] p-4 justify-between border-[2px] border-darklight bg-darker drop-shadow-md items-center">
       <div className="select-none flex items-center space-x-2">
         <div>{username}</div>
-        {player === "b" ? (
-          <FontAwesomeIcon icon={faChessKing} />
-        ) : (
-          <FontAwesomeIcon icon={outlineKing} />
-        )}
       </div>
-      <div className="text-xl font-semibold text-primary bg-tertiary border-2 border-quaternary rounded-2xl px-2 select-none">
+      <div className="text-xl font-semibold text-lightsquare bg-darker border-2 border-darksquare rounded-2xl px-2 select-none">
         {convertSecondsToMinutesAndSeconds(time).minutes}:
         {convertSecondsToMinutesAndSeconds(time).seconds}
       </div>

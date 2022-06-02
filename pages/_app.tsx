@@ -34,14 +34,12 @@ function MyApp({ Component, pageProps }: AppProps) {
         <UserContext.Provider value={{ user, username }}>
           <Navbar opened={opened} setOpened={setOpened} />
           <div className="max-w-6xl m-auto lg:px-12">
-            <div className="flex flex-col h-screen">
-              <main className="flex-1 p-8 pb-32 mt-8">
-                <Component {...pageProps} />
-              </main>
-              <div className="sm:hidden">
-                <BottomNav />
-              </div>
-            </div>
+            <main className="p-8 pb-32 mt-8">
+              <Component {...pageProps} />
+            </main>
+            <nav className="sm:hidden">
+              <BottomNav />
+            </nav>
           </div>
           <div className="hidden sm:inline">
             <Footer />
