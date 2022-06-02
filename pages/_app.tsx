@@ -37,12 +37,14 @@ function MyApp({ Component, pageProps }: AppProps) {
               <main className="flex-1 p-8 pb-32 mt-8">
                 <Component {...pageProps} />
               </main>
-              <div className="md:hidden">
+              <div className="sm:hidden">
                 <BottomNav />
               </div>
             </div>
           </div>
-          <Footer />
+          <div className="hidden sm:inline">
+            <Footer />
+          </div>
         </UserContext.Provider>
       </ErrorBoundary>
     </>

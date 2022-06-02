@@ -31,11 +31,8 @@
   }
 
   .hide-scroll {
-    /* Hide scrollbar for IE, Edge and Firefox */
-    .example {
-      -ms-overflow-style: none; /* IE and Edge */
-      scrollbar-width: none; /* Firefox */
-    }
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 
   html {
@@ -43,22 +40,13 @@
     width: 100%;
     @apply text-white;
   }
+
+  .page-header {
+    @apply text-4xl font-medium lg:text-7xl;
+  }
 }
 
 html {
-  background: linear-gradient(55deg, #693c0f, #0b272d, #061d23, #be890e);
-  background-size: 200% 300%;
-}
-
-@keyframes AnimationName {
-  0% {
-    background-position: 40% 94%;
-  }
-
-  50% {
-    background-position: 50% 37%;
-  }
-  100% {
-    background-position: 40% 94%;
-  }
+  background: linear-gradient(55deg, #693c0f, #051218, #051218, #be890e);
+  background-size: 200% 200%;
 }

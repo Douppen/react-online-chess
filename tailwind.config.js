@@ -19,6 +19,7 @@ module.exports = {
         contrast: "#FFFFFF",
         bottomgradient: "hsl(227, 51%, 16%)",
         topgradient: "hsl(227, 21%, 30%)",
+        darklight: "rgb(58, 75, 95)",
       },
     },
   },
