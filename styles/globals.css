@@ -35,6 +35,10 @@
     scrollbar-width: none; /* Firefox */
   }
 
+  .orangebutton {
+    @apply bg-complementary font-bold rounded-lg p-2 text-neutral-800 hover:bg-[#ea9861];
+  }
+
   html {
     height: 100%;
     width: 100%;

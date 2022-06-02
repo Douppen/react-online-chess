@@ -9,6 +9,7 @@ import { ErrorBoundary } from "../components/ErrorBoundary";
 import Head from "next/head";
 import BottomNav from "../components/BottomNav";
 import Footer from "../components/Footer";
+import { MantineProvider } from "@mantine/core";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const { user, username } = useUserData();

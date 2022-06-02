@@ -97,9 +97,7 @@ const Navbar = ({ opened, setOpened }: Props) => {
                 </a>
               </Link>
               <Link href="/">
-                <button className="bg-complementary px-8 font-bold rounded-lg ml-2 p-2 text-black hover:bg-[#ea7861]">
-                  Sign up
-                </button>
+                <button className="px-8 ml-2 orangebutton">Sign up</button>
               </Link>
               <Link href="/">
                 <button className="font-medium px-8 hover:underline decoration-complementary underline-offset-[6px]">

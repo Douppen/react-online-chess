@@ -14,7 +14,6 @@ const Home: NextPage = () => {
   return (
     <>
       <main>
-        <CreateGameModal />
         <h1 className="mb-6 page-header" onClick={() => {}}>
           Play
         </h1>
@@ -156,9 +155,7 @@ const Home: NextPage = () => {
             challenges
           </p>
           <div className="flex items-center justify-between w-full pt-4 max-w-md">
-            <button className="bg-complementary font-bold rounded-lg p-2 text-black flex-1 hover:bg-[#ea7861]">
-              Create account
-            </button>
+            <button className="flex-1 orangebutton">Create account</button>
             <button className="flex-1 font-medium hover:underline decoration-complementary underline-offset-[6px]">
               Log in
             </button>
@@ -182,8 +179,8 @@ function SquareButton({
 }) {
   return (
     <Link href={"/home"}>
-      <div className="flex shrink-0 flex-col group hover:border-indigo-500 transition-all cursor-pointer items-center justify-center bg-dark border-[1px] border-slate-600 rounded-lg p-2 w-24 h-24">
-        <div className="transition-all text-complementary group-hover:text-indigo-500">
+      <div className="flex shrink-0 flex-col group hover:border-indigo-500 transition-all duration-150 cursor-pointer items-center justify-center bg-dark border-[1px] border-slate-600 rounded-lg p-2 w-24 h-24">
+        <div className="transition-all duration-150 text-complementary group-hover:text-indigo-500">
           {icon}
         </div>
         <div className="flex flex-col items-center justify-center">
@@ -198,8 +195,8 @@ function SquareButton({
 function RectangleButton({ bigText, smallText, icon }) {
   return (
     <Link href={"/home"}>
-      <div className="flex items-center hover:border-indigo-500 transition-all cursor-pointer group bg-dark border-[1px] border-slate-600 rounded-lg grow p-2 h-24">
-        <div className="flex items-center justify-center w-10 ml-6 transition-all text-complementary group-hover:text-indigo-500">
+      <div className="flex items-center hover:border-indigo-500 transition-all duration-150 cursor-pointer group bg-dark border-[1px] border-slate-600 rounded-lg grow p-2 h-24">
+        <div className="flex items-center justify-center w-10 ml-6 transition-all duration-150 text-complementary group-hover:text-indigo-500">
           {icon}
         </div>
         <div className="flex flex-col ml-6">
