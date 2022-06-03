@@ -102,24 +102,26 @@ export default function LoginForm() {
       <LoadingOverlay
         visible={loading}
         overlayOpacity={0.5}
-        overlayColor={"hsl(51, 26%, 23%)"}
+        overlayColor={"hsl(205, 32%, 16%)"}
         className="rounded-2xl"
         loaderProps={{
           size: "xl",
-          color: "hsl(41, 86%, 23%)",
+          color: "hsl(200, 50%, 48%)",
         }}
       />
       {user ? (
-        <button
-          className="button text-3xl px-3"
-          onClick={async () => {
-            setLoading(true);
-            await signOut(auth);
-            setLoading(false);
-          }}
-        >
-          Sign out
-        </button>
+        <div className="flex justify-center">
+          <button
+            className="orangebutton text-2xl px-4"
+            onClick={async () => {
+              setLoading(true);
+              await signOut(auth);
+              setLoading(false);
+            }}
+          >
+            Sign out
+          </button>
+        </div>
       ) : (
         <div>
           <div className="flex mt-4 w-full select-none cursor-pointer rounded-3xl text-contrast bg-darklight transition-all p-1 justify-center mx-auto hover:ring-1 ring-darksquare">

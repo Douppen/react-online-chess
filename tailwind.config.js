@@ -20,6 +20,13 @@ module.exports = {
         darklight: "hsl(212, 24%, 30%)",
         modalbg: "hsl(205, 32%, 16%)",
       },
+      screens: {
+        560: "560px",
+        500: "500px",
+        440: "440px",
+        360: "360px",
+        320: "320px",
+      },
     },
   },
   plugins: [],

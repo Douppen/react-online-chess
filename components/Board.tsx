@@ -23,7 +23,7 @@ function Board({
   const board = gameInstance.board();
 
   return (
-    <div className="game-size relative order-2">
+    <div className="relative order-2">
       <Background
         onClickHandler={onClickHandler}
         clickedSquare={clickedSquare}

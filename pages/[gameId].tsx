@@ -28,6 +28,7 @@ import SharePage from "../components/Sharepage";
 import { UserContext } from "../lib/context";
 import { db } from "../lib/firebase";
 import { gamesCollection, posFromSquare, squareFromPos } from "../lib/helpers";
+import useWindowDimensions from "../lib/hooks";
 import { Vector } from "../types/types";
 
 interface Props {
@@ -323,7 +324,7 @@ const Chessgame: NextPage<Props> = ({
     <SharePage id={gameId} />
   ) : (
     <main
-      className={`flex items-center mt-3 ${
+      className={`flex origin-top scale-[40%] 320:scale-[52%] 360:scale-[60%] 440:scale-[70%] 500:scale-[80%] 560:scale-[90%] items-center mt-3 ${
         player === "b" ? "flex-col-reverse" : "flex-col"
       }`}
     >
