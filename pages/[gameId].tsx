@@ -324,7 +324,7 @@ const Chessgame: NextPage<Props> = ({
     <SharePage id={gameId} />
   ) : (
     <main
-      className={`flex origin-top scale-[40%] 320:scale-[52%] 360:scale-[60%] 440:scale-[70%] 500:scale-[80%] 560:scale-[90%] items-center mt-3 ${
+      className={`flex max-h-[75vh] sm:max-h-max origin-top scale-[40%] 320:scale-[52%] 360:scale-[60%] 440:scale-[70%] 500:scale-[80%] 560:scale-[90%] items-center mt-3 ${
         player === "b" ? "flex-col-reverse" : "flex-col"
       }`}
     >

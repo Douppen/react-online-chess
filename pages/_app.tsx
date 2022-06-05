@@ -34,16 +34,18 @@ function MyApp({ Component, pageProps }: AppProps) {
         <UserContext.Provider value={{ user, username }}>
           <Navbar opened={opened} setOpened={setOpened} />
           <div className="max-w-6xl m-auto lg:px-12">
-            <main className="p-8 pb-32 mt-8">
+            <main className="p-8 mb-24 mt-8">
               <Component {...pageProps} />
             </main>
             <nav className="sm:hidden">
               <BottomNav />
             </nav>
           </div>
-          <div className="hidden sm:inline">
-            <Footer />
-          </div>
+          {Component.pageName === "index" && (
+            <div className="hidden sm:inline">
+              <Footer />
+            </div>
+          )}
         </UserContext.Provider>
       </ErrorBoundary>
     </>

@@ -16,6 +16,7 @@ import { UserContext } from "../lib/context";
 import { gamesCollection, makeRandomId } from "../lib/helpers";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
+import Footer from "../components/Footer";
 
 const Home: NextPage = () => {
   const [opened, setOpened] = useState(false);
@@ -95,8 +96,8 @@ const Home: NextPage = () => {
               stroke="currentColor"
             >
               <path
-                fill-rule="evenodd"
-                clip-rule="evenodd"
+                fillRule="evenodd"
+                clipRule="evenodd"
                 d="M30 6.47723C30 6.47723 29.957 7.0127 29.8375 7.68472C29.7883 7.96122 29.7076 8.35402 29.5794 8.83939C29.3232 9.80962 28.8763 11.1534 28.1097 12.6788C26.5734 15.7359 23.7573 19.5117 18.6526 22.4589L17.7866 22.9589L9.63281 8.83617L10.4988 8.33617C15.6035 5.38897 20.2815 4.83808 23.6972 5.03612C25.4015 5.13493 26.7887 5.41981 27.7571 5.68305C28.2415 5.81473 28.622 5.94125 28.8861 6.03689C29.5977 6.29465 30 6.47723 30 6.47723ZM27.7804 7.77381C27.6218 7.72358 27.4386 7.66906 27.2324 7.61301C26.3769 7.38044 25.1276 7.1224 23.5814 7.03276C20.6882 6.86502 16.7454 7.28555 12.3746 9.58512L18.5089 20.21C22.6858 17.5745 25.0213 14.3702 26.3227 11.7807C27.0181 10.3969 27.4193 9.18597 27.6457 8.32876C27.7002 8.12215 27.7446 7.93632 27.7804 7.77381Z"
               ></path>
               <path d="M10.4322 16.4576C10.9264 16.2111 11.5269 16.412 11.7733 16.9062C12.0198 17.4005 11.819 18.0009 11.3247 18.2474L3.44651 22.1764C2.95228 22.4228 2.35181 22.222 2.10533 21.7278C1.85885 21.2335 2.0597 20.6331 2.55393 20.3866L10.4322 16.4576Z"></path>
@@ -119,9 +120,9 @@ const Home: NextPage = () => {
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
             </svg>
@@ -138,9 +139,9 @@ const Home: NextPage = () => {
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
             </svg>
@@ -158,9 +159,9 @@ const Home: NextPage = () => {
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
             </svg>
@@ -268,6 +269,7 @@ const Home: NextPage = () => {
   );
 };
 
+Home.pageName = "index";
 export default Home;
 
 function SquareButton({
