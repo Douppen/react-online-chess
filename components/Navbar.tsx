@@ -67,20 +67,38 @@ const Navbar = ({}) => {
             </div>
           </div>
           <div className="flex">
-            <div className="hidden lg:flex lg:w-72 justify-end">
+            <div className="hidden lg:flex items-center lg:w-96 justify-end">
               <Link href="/settings">
-                <a className="rounded-full hover:bg-slate-700 p-2 hover:animate-[spin_1s] transition-all">
+                <a className="circlehover hover:animate-[spin_1s] transition-all mr-2">
                   <CogWheelIcon />
                 </a>
               </Link>
-              <Link href="/login">
-                <button className="px-8 ml-2 orangebutton">Sign up</button>
-              </Link>
-              <Link href="/login">
-                <button className="font-medium px-8 hover:underline decoration-complementary underline-offset-[6px]">
-                  Log in
-                </button>
-              </Link>
+              {!username ? (
+                <>
+                  <Link href="/login">
+                    <button className="px-8 ml-2 orangebutton">Sign up</button>
+                  </Link>
+                  <Link href="/login">
+                    <button className="font-medium px-8 hover:underline decoration-complementary underline-offset-[6px]">
+                      Log in
+                    </button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href={"/users"}>
+                    <button className="text-lg font-medium flex items-center space-x-2">
+                      <p>{username}</p>
+                      <CountryIcon />
+                    </button>
+                  </Link>
+                  <Link href="/login">
+                    <button className="ml-4 circlehover">
+                      <LogOutIcon />
+                    </button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -111,6 +129,27 @@ function CogWheelIcon() {
         strokeLinejoin="round"
         d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
       />
+    </svg>
+  );
+}
+
+function CountryIcon() {
+  return (
+    <svg viewBox="0 0 512 341.3" width={"20"}>
+      <title>Finland</title>
+      <path fill="#FFF" d="M0 0h512v341.3H0z"></path>
+      <path
+        fill="#2E52B2"
+        d="M512 129.3V212H203.7v129.3H121V212H0v-82.7h121V0h82.7v129.3z"
+      ></path>
+    </svg>
+  );
+}
+
+function LogOutIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="white" width={"28"}>
+      <path d="M4 5L4 19H12V13H7C6.44772 13 6 12.5523 6 12C6 11.4477 6.44772 11 7 11H12V5H4ZM14 13V19C14 20.1046 13.1046 21 12 21H4C2.89543 21 2 20.1046 2 19V5C2 3.89543 2.89543 3 4 3H12C13.1046 3 14 3.89543 14 5V11H18.5858L16.2929 8.70711C15.9024 8.31658 15.9024 7.68342 16.2929 7.29289C16.6834 6.90237 17.3166 6.90237 17.7071 7.29289L21.7071 11.2929C22.0976 11.6834 22.0976 12.3166 21.7071 12.7071L17.7071 16.7071C17.3166 17.0976 16.6834 17.0976 16.2929 16.7071C15.9024 16.3166 15.9024 15.6834 16.2929 15.2929L18.5858 13H14Z"></path>
     </svg>
   );
 }

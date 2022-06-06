@@ -4,7 +4,7 @@ import {
   CollectionReference,
   DocumentData,
 } from "firebase/firestore";
-import { Chessgame } from "../types/types";
+import { ChessgameProps } from "../types/types";
 import { db } from "./firebase";
 
 // Firestore collections types with generic types
@@ -13,7 +13,7 @@ export function getCollection<T = DocumentData>(collectionName: string) {
 }
 
 // List of collections with type as generic
-export const gamesCollection = getCollection<Chessgame>("games");
+export const gamesCollection = getCollection<ChessgameProps>("games");
 
 // SAN to position object function
 export const posFromSquare = (square: Square): { x: number; y: number } => {

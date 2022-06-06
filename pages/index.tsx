@@ -1,22 +1,16 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faChess,
-  faBoltLightning,
-  faHourglass,
-  faEllipsis,
-} from "@fortawesome/free-solid-svg-icons";
+import { faChess } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { NextPage } from "next";
 import CreateGameModal from "../components/CreateGameModal";
 
 import { useRouter } from "next/router";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { UserContext } from "../lib/context";
 import { gamesCollection, makeRandomId } from "../lib/helpers";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
-import Footer from "../components/Footer";
 import { GameModalProps } from "../types/types";
 
 type ExtendedNextPage = NextPage & {
@@ -42,16 +36,14 @@ const Home: ExtendedNextPage = () => {
     }
 
     const opponentColor = color === "w" ? "b" : "w";
-    // Create a new game document in Firestore and then redirect to the game page
-    // Generate a random game ID that will be the URL of the game page. Length of the ID is 6.
-    let gameId = makeRandomId(6);
-    let gameRef = doc(db, "games", gameId);
+    let gameId = makeRandomId(4);
+    let gameRef = doc(gamesCollection, gameId);
 
     // Create a new game document in Firestore
     let gameDoc = await getDoc(gameRef);
     while (gameDoc.exists()) {
-      gameId = makeRandomId(6);
-      gameRef = doc(db, "games", gameId);
+      gameId = makeRandomId(4);
+      gameRef = doc(gamesCollection, gameId);
       gameDoc = await getDoc(gameRef);
     }
     setDoc(gameRef, {
@@ -64,13 +56,15 @@ const Home: ExtendedNextPage = () => {
         [color]: username,
         [opponentColor]: null,
       },
+      gameCreator: username!,
       result: null,
-      creationTime: serverTimestamp(),
-      startTime: null,
-      endTime: null,
+      creationTimestamp: serverTimestamp(),
+      startTimestamp: null,
+      endTimestamp: null,
       timeTracker: null,
+    }).then(() => {
+      router.push(`${gameId}`);
     });
-    router.push(`${gameId}`);
   };
 
   function changeModal(value: Partial<GameModalProps>) {

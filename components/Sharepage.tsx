@@ -1,4 +1,7 @@
 import { useClipboard } from "@mantine/hooks";
+import { deleteDoc, doc } from "firebase/firestore";
+import { useRouter } from "next/router";
+import { gamesCollection } from "../lib/helpers";
 
 type Props = {
   id: string;
@@ -6,6 +9,8 @@ type Props = {
 
 function SharePage({ id }: Props) {
   const clipboard = useClipboard({ timeout: 800 });
+  const router = useRouter();
+
   return (
     <div className="flex flex-col items-left space-y-6 max-w-xl mx-auto mt-10">
       <div>
@@ -33,7 +38,18 @@ function SharePage({ id }: Props) {
         </p>
       </div>
       <div>
-        <button className="orangebutton px-12 py-3 font-bold">CANCEL</button>
+        <button
+          className="orangebutton px-12 py-3 font-bold"
+          onClick={() => {
+            const gameId = router.asPath.slice(1);
+            const gameRef = doc(gamesCollection, gameId);
+            deleteDoc(gameRef).then(() => {
+              router.push("/");
+            });
+          }}
+        >
+          CANCEL
+        </button>
       </div>
     </div>
   );

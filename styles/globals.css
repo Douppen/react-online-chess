@@ -34,6 +34,10 @@
     @apply font-medium hover:underline decoration-complementary underline-offset-[6px];
   }
 
+  .circlehover {
+    @apply rounded-full hover:bg-slate-700 p-2;
+  }
+
   html {
     height: 100%;
     width: 100%;
