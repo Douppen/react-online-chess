@@ -12,7 +12,7 @@ function SharePage({ id }: Props) {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col items-left space-y-6 max-w-xl mx-auto mt-10">
+    <div className="flex flex-col space-y-6">
       <div>
         <p className="text-4xl">Challenge someone to a game</p>
       </div>
@@ -27,7 +27,7 @@ function SharePage({ id }: Props) {
               clipboard.copied
                 ? "bg-darklight text-white"
                 : "bg-dark text-white"
-            } transition-all select-none p-3 border-[1.5px] border-slate-200 h-12 flex items-center rounded-lg -ml-1`}
+            } transition-all hidden sm:flex select-none p-3 border-[1.5px] border-slate-200 h-12 items-center rounded-lg -ml-1`}
             onClick={() => clipboard.copy("asdhoas")}
           >
             {clipboard.copied ? "Copied" : "Copy"}
@@ -48,7 +48,7 @@ function SharePage({ id }: Props) {
             });
           }}
         >
-          CANCEL
+          Cancel Game
         </button>
       </div>
     </div>
