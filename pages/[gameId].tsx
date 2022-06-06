@@ -20,6 +20,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { toast } from "react-toastify";
 import useSound from "use-sound";
 import Board from "../components/Board";
 import GameEnded from "../components/GameEnded";
@@ -352,7 +353,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
   const gameSnap = await getDoc(gameRef);
   if (!gameSnap.exists()) {
-    throw new Error("This game does not exist");
+    return {
+      notFound: true,
+    };
   }
   const pgnFromServer = gameSnap.data()!.pgn;
   const started = gameSnap.data()!.started;

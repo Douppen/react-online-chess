@@ -10,6 +10,7 @@ import Head from "next/head";
 import BottomNav from "../components/BottomNav";
 import Footer from "../components/Footer";
 import { MantineProvider } from "@mantine/core";
+import { Toaster } from "react-hot-toast";
 
 type ExtendedAppProps = AppProps & {
   Component: {
@@ -35,24 +36,24 @@ function MyApp({ Component, pageProps }: ExtendedAppProps) {
         />
         <link rel="manifest" href="/site.webmanifest" />
       </Head>
-      <ErrorBoundary>
-        <UserContext.Provider value={{ user, username }}>
-          <Navbar />
-          <div className="max-w-6xl m-auto lg:px-12">
-            <main className="p-8 pb-32 sm:pb-16 mt-4">
-              <Component {...pageProps} />
-            </main>
-            <nav className="sm:hidden">
-              <BottomNav />
-            </nav>
+
+      <UserContext.Provider value={{ user, username }}>
+        <Toaster />
+        <Navbar />
+        <div className="max-w-6xl m-auto lg:px-12">
+          <main className="p-8 pb-32 sm:pb-16 mt-4">
+            <Component {...pageProps} />
+          </main>
+          <nav className="sm:hidden">
+            <BottomNav />
+          </nav>
+        </div>
+        {Component.pageName === "index" && (
+          <div className="hidden sm:inline">
+            <Footer />
           </div>
-          {Component.pageName === "index" && (
-            <div className="hidden sm:inline">
-              <Footer />
-            </div>
-          )}
-        </UserContext.Provider>
-      </ErrorBoundary>
+        )}
+      </UserContext.Provider>
     </>
   );
 }
