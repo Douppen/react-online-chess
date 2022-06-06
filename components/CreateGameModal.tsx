@@ -1,27 +1,44 @@
 import {
   Modal,
+  ModalProps,
   NumberInput,
   NumberInputProps,
   Slider,
   SliderProps,
-  TextInput,
-  TextInputProps,
 } from "@mantine/core";
+import { GameModalProps } from "../types/types";
 import CustomTextInput from "./CustomTextInput";
 
-const CreateGameModal = () => {
+interface ExtendedModalProps extends ModalProps {
+  setModal: ({}: Partial<GameModalProps>) => void;
+  modal: GameModalProps;
+  initiateGame: () => void;
+}
+
+const CreateGameModal = ({
+  opened,
+  setModal,
+  modal,
+  initiateGame,
+  onClose,
+  ...rest
+}: ExtendedModalProps) => {
   return (
     <Modal
+      {...rest}
       withCloseButton={false}
-      opened={true}
-      onClose={() => {}}
+      opened={opened}
+      onClose={onClose}
       classNames={{
-        modal: "bg-modalbg md:mt-16 md:w-2/3 max-w-2xl",
+        modal: "bg-dark md:mt-16 md:w-2/3 max-w-2xl",
       }}
     >
       <div className="text-white">
         <header className="flex items-center justify-between mb-4">
-          <button className="hover:bg-slate-500 p-2 rounded-full">
+          <button
+            onClick={() => onClose()}
+            className="hover:bg-slate-500 p-2 rounded-full"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -57,43 +74,103 @@ const CreateGameModal = () => {
           </div>
           <div className="space-y-4 mt-12 mb-4">
             <div className="flex items-center space-x-4">
-              <CustomNumberInput min={1} max={30} />
+              <CustomNumberInput
+                min={1}
+                max={30}
+                value={modal.time}
+                onChange={(e) => {
+                  e === undefined
+                    ? setModal({ time: 1 })
+                    : setModal({ time: e.valueOf() });
+                }}
+              />
               <p className="font-medium">Minutes for each side</p>
             </div>
-            <CustomSlider step={1} min={1} max={30} />
+            <CustomSlider
+              step={1}
+              min={0}
+              max={30}
+              value={modal.time}
+              onChange={(e) => setModal({ time: e.valueOf() })}
+            />
           </div>
           <div className="space-y-4 mt-8 mb-8">
             <div className="flex items-center space-x-4">
-              <CustomNumberInput min={1} max={30} />
+              <CustomNumberInput
+                min={0}
+                max={30}
+                value={modal.increment}
+                onChange={(e) => {
+                  e === undefined
+                    ? setModal({ increment: 1 })
+                    : setModal({ increment: e.valueOf() });
+                }}
+              />
               <p className="font-medium">Increment in seconds</p>
             </div>
-            <CustomSlider step={1} min={1} max={30} />
+            <CustomSlider
+              step={1}
+              min={0}
+              max={30}
+              value={modal.increment}
+              onChange={(e) => setModal({ increment: e.valueOf() })}
+            />
           </div>
           <CustomTextInput placeholder="Friend's username" />
           <div className="mt-6">
             <h4 className="font-medium mb-4">Color</h4>
-            <div className="flex items-center space-x-8">
-              <button className="font-light ml-4 flex flex-col space-y-2 items-center">
-                <div className="w-6 h-6 rounded-full border-[1.4px] border-white bg-white"></div>
-                <p>white</p>
-              </button>
-              <button className="font-light flex flex-col space-y-2 items-center">
+            <div className="flex items-center space-x-8 select-none">
+              <button
+                onClick={() => setModal({ color: "w" })}
+                className={`font-light ml-4 flex flex-col space-y-2 items-center `}
+              >
                 <div
-                  className="w-6 h-6 rounded-full border-[1.4px] border-white bg-white"
+                  className={`w-6 h-6 rounded-full border-[1.4px] border-white hover:ring-2 ring-indigo-500 bg-white ${
+                    modal.color === "w" && "ring-[6px] hover:ring-[6px]"
+                  }`}
+                ></div>
+                <p className={`${modal.color === "w" && "text-indigo-400"}`}>
+                  white
+                </p>
+              </button>
+              <button
+                onClick={() => setModal({ color: "random" })}
+                className={`font-light flex flex-col space-y-2 items-center `}
+              >
+                <div
+                  className={`w-6 h-6 rounded-full border-[1.4px] border-white hover:ring-2 ring-indigo-500 bg-white ${
+                    modal.color === "random" && "ring-[6px] hover:ring-[6px]"
+                  }`}
                   style={{
                     background:
                       "linear-gradient( 90deg, black 50%, white 50.1%",
                   }}
                 ></div>
-                <p>random</p>
+                <p
+                  className={`${modal.color === "random" && "text-indigo-400"}`}
+                >
+                  random
+                </p>
               </button>
-              <button className="font-light flex flex-col space-y-2 items-center">
-                <div className="w-6 h-6 rounded-full border-[1.4px] border-white bg-black"></div>
-                <p>black</p>
+              <button
+                onClick={() => setModal({ color: "b" })}
+                className={`font-light flex flex-col space-y-2 items-center `}
+              >
+                <div
+                  className={`w-6 h-6 rounded-full border-[1.4px] border-white hover:ring-2 ring-indigo-500 bg-black ${
+                    modal.color === "b" && "ring-[6px] hover:ring-[6px]"
+                  }`}
+                ></div>
+                <p className={`${modal.color === "b" && "text-indigo-400"}`}>
+                  black
+                </p>
               </button>
             </div>
           </div>
-          <button className="orangebutton w-full mt-12 py-3 text-xl">
+          <button
+            onClick={() => initiateGame()}
+            className="orangebutton w-full mt-12 py-3 text-xl"
+          >
             Send Challenge
           </button>
         </div>
@@ -112,7 +189,7 @@ function CustomNumberInput({ ...rest }: NumberInputProps) {
       variant="unstyled"
       classNames={{
         unstyledVariant:
-          "bg-darklight p-2 focus:bg-modalbg text-2xl font-medium focus:ring-indigo-400 focus:ring-2 text-indigo-300 text-center px-2 h-10 w-16 transition-all rounded-lg text-ligthsquare hover:ring-2 ring-darksquare border-ligthsquare",
+          "bg-darklight p-2 focus:bg-dark text-2xl font-medium focus:ring-indigo-400 focus:ring-2 text-indigo-300 text-center px-2 h-10 w-16 transition-all rounded-lg text-ligthsquare hover:ring-2 ring-darksquare border-ligthsquare",
       }}
     />
   );
@@ -155,8 +232,8 @@ function CustomSlider({ ...rest }: SliderProps) {
           ></path>
           <path
             opacity="0.6"
-            fill-rule="evenodd"
-            clip-rule="evenodd"
+            fillRule="evenodd"
+            clipRule="evenodd"
             d="M8.4707 7.5C8.74685 7.5 8.9707 7.72386 8.9707 8V16C8.9707 16.2761 8.74685 16.5 8.4707 16.5C8.19456 16.5 7.9707 16.2761 7.9707 16V8C7.9707 7.72386 8.19456 7.5 8.4707 7.5ZM12.4707 7.5C12.7468 7.5 12.9707 7.72386 12.9707 8V16C12.9707 16.2761 12.7468 16.5 12.4707 16.5C12.1946 16.5 11.9707 16.2761 11.9707 16V8C11.9707 7.72386 12.1946 7.5 12.4707 7.5ZM16.9707 8C16.9707 7.72386 16.7468 7.5 16.4707 7.5C16.1946 7.5 15.9707 7.72386 15.9707 8V16C15.9707 16.2761 16.1946 16.5 16.4707 16.5C16.7468 16.5 16.9707 16.2761 16.9707 16V8Z"
             fill="#DBE2E8"
           ></path>

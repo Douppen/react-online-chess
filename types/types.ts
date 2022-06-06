@@ -41,3 +41,11 @@ export type Vector = {
 };
 
 export type ClickHandler = ({ x, y }: { x: number; y: number }) => void;
+
+export type GameModalProps = {
+  isOpen: boolean;
+  time: number;
+  increment: number;
+  color: "w" | "b" | "random";
+  friendUsername: string;
+};

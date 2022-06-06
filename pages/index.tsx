@@ -11,50 +11,46 @@ import { NextPage } from "next";
 import CreateGameModal from "../components/CreateGameModal";
 
 import { useRouter } from "next/router";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../lib/context";
 import { gamesCollection, makeRandomId } from "../lib/helpers";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import Footer from "../components/Footer";
+import { GameModalProps } from "../types/types";
 
-const Home: NextPage = () => {
-  const [opened, setOpened] = useState(false);
-  const [minutes, setMinutes] = useState(5);
-  const [seconds, setSeconds] = useState(5);
-  const [color, setColor] = useState<"w" | "b" | "random">("random");
+type ExtendedNextPage = NextPage & {
+  pageName: string;
+};
+
+const Home: ExtendedNextPage = () => {
   const { user, username } = useContext(UserContext);
-
-  const minuteMarks = [
-    { value: 1, label: "1 min" },
-    { value: 10, label: "10 min" },
-  ];
-  const secondMarks = [
-    { value: 1, label: "1 sec" },
-    { value: 10, label: "10 sec" },
-  ];
-
+  const [modal, setModal] = useState<GameModalProps>({
+    isOpen: false,
+    time: 1,
+    increment: 0,
+    color: "random",
+    friendUsername: "",
+  });
   const router = useRouter();
 
-  const initiateGame = async (
-    time: number,
-    increment: number,
-    color: "w" | "b" | "random"
-  ) => {
+  const initiateGame = async () => {
+    let { color, time, increment } = modal;
+
     if (color === "random") {
       color = Math.random() > 0.5 ? "w" : "b";
     }
 
     const opponentColor = color === "w" ? "b" : "w";
     // Create a new game document in Firestore and then redirect to the game page
-    // Generate a random game ID that will be the URL of the game page. Length of the ID is 4.
-    let gameId = makeRandomId(4);
+    // Generate a random game ID that will be the URL of the game page. Length of the ID is 6.
+    let gameId = makeRandomId(6);
     let gameRef = doc(db, "games", gameId);
 
     // Create a new game document in Firestore
     let gameDoc = await getDoc(gameRef);
     while (gameDoc.exists()) {
-      gameId = makeRandomId(4);
+      gameId = makeRandomId(6);
       gameRef = doc(db, "games", gameId);
       gameDoc = await getDoc(gameRef);
     }
@@ -69,112 +65,120 @@ const Home: NextPage = () => {
         [opponentColor]: null,
       },
       result: null,
-      startTime: serverTimestamp(),
+      creationTime: serverTimestamp(),
+      startTime: null,
       endTime: null,
       timeTracker: null,
     });
     router.push(`${gameId}`);
   };
 
+  function changeModal(value: Partial<GameModalProps>) {
+    setModal((prevModal) => ({ ...prevModal, ...value }));
+  }
+
   return (
     <>
-      <h1 className="mb-6 page-header" onClick={() => {}}>
-        Play
-      </h1>
-      <p className="mb-4 text-xl font-medium">Quick pairing</p>
-      <div className="flex mb-10 space-x-2 overflow-x-auto hide-scroll">
-        <SquareButton
-          link="/"
-          bigText="1 min"
-          smallText="Bullet"
-          icon={<BulletIcon />}
-        />
-        <SquareButton
-          link="/"
-          bigText="3 min"
-          smallText="Blitz"
-          icon={<BoltIcon />}
-        />
-        <SquareButton
-          link="/"
-          bigText="5 min"
-          smallText="Blitz"
-          icon={<BoltIcon />}
-        />
-        <SquareButton
-          link="/"
-          bigText="8 min"
-          smallText="Blitz"
-          icon={<BoltIcon />}
-        />
-        <SquareButton
-          link="/"
-          bigText="10 min"
-          smallText="Rapid"
-          icon={
-            <Icon icon="mdi:rabbit" fontSize={30} className="-mt-1 -mb-[1px]" />
-          }
-        />
-        <SquareButton
-          link="/"
-          bigText="15 min"
-          smallText="Rapid"
-          icon={
-            <Icon icon="mdi:rabbit" fontSize={30} className="-mt-1 -mb-[1px]" />
-          }
-        />
-        <SquareButton
-          link="/"
-          bigText="More"
-          smallText="Custom"
-          icon={<EllipsisIcon />}
-        />
-      </div>
-      <p className="mb-4 text-xl font-medium">New game</p>
-      <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
-        <RectangleButton
-          link="/"
-          bigText="Custom game"
-          smallText="Random opponent"
-          icon={<GlobeIcon />}
-        />
-        <RectangleButton
-          link="/"
-          bigText="Play with computer"
-          smallText="Different levels"
-          icon={
-            <FontAwesomeIcon
-              icon={faChess}
-              style={{
-                fontSize: 40,
-              }}
-            />
-          }
-        />
-        <RectangleButton
-          link="/"
-          bigText="Invite to play"
-          smallText="Link or username"
-          icon={<PeopleIcon />}
-        />
-      </div>
-      <p className="mt-8 mb-4 text-xl font-medium">Join game</p>
-      <div className="bg-dark flex flex-col justify-center rounded-lg py-4 px-6 border-[1px] border-slate-600">
-        <p>
-          Create an account or sign in to join custom games and private
-          challenges
-        </p>
-        <div className="flex items-center justify-between w-full pt-4 max-w-md">
-          <Link href="/login">
-            <button className="flex-1 orangebutton">Create account</button>
-          </Link>
-          <Link href="/login">
-            <button className="flex-1 font-medium hover:underline decoration-complementary underline-offset-[6px]">
-              Log in
-            </button>
-          </Link>
+      <CreateGameModal
+        initiateGame={initiateGame}
+        setModal={changeModal}
+        modal={modal}
+        onClose={() => setModal({ ...modal, isOpen: false })}
+        opened={modal.isOpen}
+      />
+      <main>
+        <h1 className="mb-6 page-header">Play</h1>
+        <p className="mb-4 text-xl font-medium">Quick pairing</p>
+        <div className="flex mb-10 space-x-2 overflow-x-auto hide-scroll">
+          <SquareButton
+            onClick={() => {}}
+            bigText="1 min"
+            smallText="Bullet"
+            icon={<BulletIcon />}
+          />
+          <SquareButton
+            onClick={() => {}}
+            bigText="3 min"
+            smallText="Blitz"
+            icon={<BoltIcon />}
+          />
+          <SquareButton
+            onClick={() => {}}
+            bigText="5 min"
+            smallText="Blitz"
+            icon={<BoltIcon />}
+          />
+          <SquareButton
+            onClick={() => {}}
+            bigText="8 min"
+            smallText="Blitz"
+            icon={<BoltIcon />}
+          />
+          <SquareButton
+            onClick={() => {}}
+            bigText="10 min"
+            smallText="Rapid"
+            icon={<RabbitIcon />}
+          />
+          <SquareButton
+            onClick={() => {}}
+            bigText="15 min"
+            smallText="Rapid"
+            icon={<RabbitIcon />}
+          />
+          <SquareButton
+            onClick={() => {}}
+            bigText="More"
+            smallText="Custom"
+            icon={<EllipsisIcon />}
+          />
         </div>
-      </div>
+        <p className="mb-4 text-xl font-medium">New game</p>
+        <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
+          <RectangleButton
+            onClick={() => setModal({ ...modal, isOpen: true })}
+            bigText="Custom game"
+            smallText="Random opponent"
+            icon={<GlobeIcon />}
+          />
+          <RectangleButton
+            onClick={() => {}}
+            bigText="Play with computer"
+            smallText="Different levels"
+            icon={
+              <FontAwesomeIcon
+                icon={faChess}
+                style={{
+                  fontSize: 40,
+                }}
+              />
+            }
+          />
+          <RectangleButton
+            onClick={() => {}}
+            bigText="Invite to play"
+            smallText="Link or username"
+            icon={<PeopleIcon />}
+          />
+        </div>
+        <p className="mt-8 mb-4 text-xl font-medium">Join game</p>
+        <div className="bg-dark flex flex-col justify-center rounded-lg py-4 px-6 border-[1px] border-slate-600">
+          <p>
+            Create an account or sign in to join custom games and private
+            challenges
+          </p>
+          <div className="flex items-center justify-between w-full pt-4 max-w-md">
+            <Link href="/login">
+              <button className="flex-1 orangebutton">Create account</button>
+            </Link>
+            <Link href="/login">
+              <button className="flex-1 font-medium hover:underline decoration-complementary underline-offset-[6px]">
+                Log in
+              </button>
+            </Link>
+          </div>
+        </div>
+      </main>
     </>
   );
 };
@@ -186,25 +190,26 @@ function SquareButton({
   smallText,
   bigText,
   icon,
-  link,
+  onClick,
 }: {
   smallText: string;
   bigText: string;
   icon: any;
-  link: string;
+  onClick: () => void;
 }) {
   return (
-    <Link href={link}>
-      <div className="flex shrink-0 flex-col group hover:border-indigo-500 transition-all duration-150 cursor-pointer items-center justify-center bg-dark border-[1px] border-slate-600 rounded-lg p-2 w-24 h-24">
-        <div className="transition-all duration-150 text-complementary group-hover:text-indigo-500">
-          {icon}
-        </div>
-        <div className="flex flex-col items-center justify-center">
-          <p className="text-lg font-medium text-contrast">{bigText}</p>
-          <p className="text-xs font-medium text-description">{smallText}</p>
-        </div>
+    <button
+      onClick={() => onClick()}
+      className="flex shrink-0 flex-col group hover:border-indigo-500 transition-all duration-150 cursor-pointer items-center justify-center bg-dark border-[1px] border-slate-600 rounded-lg p-2 w-24 h-24"
+    >
+      <div className="transition-all duration-150 text-complementary group-hover:text-indigo-500">
+        {icon}
       </div>
-    </Link>
+      <div className="flex flex-col items-center justify-center">
+        <p className="text-md font-semibold text-contrast">{bigText}</p>
+        <p className="text-xs text-description">{smallText}</p>
+      </div>
+    </button>
   );
 }
 
@@ -212,25 +217,26 @@ function RectangleButton({
   bigText,
   smallText,
   icon,
-  link,
+  onClick,
 }: {
   smallText: string;
   bigText: string;
   icon: any;
-  link: string;
+  onClick: () => void;
 }) {
   return (
-    <Link href={link}>
-      <div className="flex items-center hover:border-indigo-500 transition-all duration-150 cursor-pointer group bg-dark border-[1px] border-slate-600 rounded-lg grow p-2 h-24">
-        <div className="flex items-center justify-center w-10 ml-6 transition-all duration-150 text-complementary group-hover:text-indigo-500">
-          {icon}
-        </div>
-        <div className="flex flex-col ml-6">
-          <p className="text-lg font-bold text-contrast">{bigText}</p>
-          <p className="text-sm font-medium text-description">{smallText}</p>
-        </div>
+    <button
+      onClick={() => onClick()}
+      className="flex items-center hover:border-indigo-500 transition-all duration-150 cursor-pointer group bg-dark border-[1px] border-slate-600 rounded-lg grow p-2 h-20"
+    >
+      <div className="flex items-center justify-center w-10 ml-6 transition-all duration-150 text-complementary group-hover:text-indigo-500">
+        {icon}
       </div>
-    </Link>
+      <div className="flex flex-col ml-6">
+        <p className="text-md font-semibold text-contrast">{bigText}</p>
+        <p className="text-sm text-description">{smallText}</p>
+      </div>
+    </button>
   );
 }
 
@@ -278,6 +284,9 @@ function BoltIcon() {
       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
     </svg>
   );
+}
+function RabbitIcon() {
+  return <Icon icon="mdi:rabbit" fontSize={30} className="-mt-1 -mb-[1px]" />;
 }
 function EllipsisIcon() {
   return (

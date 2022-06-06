@@ -12,17 +12,8 @@
 }
 
 @layer components {
-  .button-primary {
-    @apply w-40 p-3 font-medium transition-all duration-500 border-2 rounded-md shadow-2xl bg-primary border-primary hover:bg-white hover:text-primary hover:scale-105;
-  }
   .disabled {
     @apply font-normal text-gray-300 rounded-md bg-slate-400;
-  }
-  .hamburger-item {
-    @apply w-full h-full text-xl font-light text-white transition-all hover:scale-110 hover:underline hover:text-gray-200;
-  }
-  .button {
-    @apply transition-all duration-200 ease-out border-2 rounded-md select-none text-primary border-quaternary hover:bg-tertiary active:bg-secondary;
   }
 
   .hide-scroll::-webkit-scrollbar {
@@ -39,10 +30,14 @@
     @apply bg-complementary font-bold rounded-lg p-2 text-darker hover:bg-[#ea9861];
   }
 
+  .underlinebutton {
+    @apply font-medium hover:underline decoration-complementary underline-offset-[6px];
+  }
+
   html {
     height: 100%;
     width: 100%;
-    @apply text-white;
+    @apply text-contrast;
   }
 
   .page-header {

@@ -11,9 +11,14 @@ import BottomNav from "../components/BottomNav";
 import Footer from "../components/Footer";
 import { MantineProvider } from "@mantine/core";
 
-function MyApp({ Component, pageProps }: AppProps) {
+type ExtendedAppProps = AppProps & {
+  Component: {
+    pageName?: string;
+  }
+}
+
+function MyApp({ Component, pageProps }: ExtendedAppProps) {
   const { user, username } = useUserData();
-  const [opened, setOpened] = useState(false);
 
   return (
     <>
@@ -32,9 +37,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <ErrorBoundary>
         <UserContext.Provider value={{ user, username }}>
-          <Navbar opened={opened} setOpened={setOpened} />
+          <Navbar />
           <div className="max-w-6xl m-auto lg:px-12">
-            <main className="p-8 mb-24 mt-8">
+            <main className="p-8 mb-24 mt-4">
               <Component {...pageProps} />
             </main>
             <nav className="sm:hidden">
