@@ -2,7 +2,7 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import Navbar from "../components/Navbar";
 import { UserContext } from "../lib/context";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useUserData } from "../lib/hooks";
 import ChooseUsername from "../components/ChooseUsername";
 import { ErrorBoundary } from "../components/ErrorBoundary";

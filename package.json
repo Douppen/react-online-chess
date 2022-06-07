@@ -30,6 +30,7 @@
     "react-firebase-hooks": "^5.0.3",
     "react-hot-toast": "^2.2.0",
     "react-icons": "^4.3.1",
+    "suspend-react": "0.0.8",
     "use-sound": "^4.0.1"
   },
   "devDependencies": {

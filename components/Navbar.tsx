@@ -1,12 +1,34 @@
-import { Burger } from "@mantine/core";
+import { Burger, Loader } from "@mantine/core";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { NextPage } from "next";
 import Link from "next/link";
-import { Dispatch, SetStateAction, useContext } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { suspend } from "suspend-react";
 import { UserContext } from "../lib/context";
+import { auth, db } from "../lib/firebase";
+import { useUserData } from "../lib/hooks";
 import { Link as CustomLink } from "./Link";
 
-const Navbar = ({}) => {
+export default function Navbar() {
+  const [loading, setLoading] = useState(true);
   const { user, username } = useContext(UserContext);
+
+  useEffect(() => {
+    if (username) {
+      setLoading(false);
+    }
+    setTimeout(() => {
+      setLoading(false);
+    }, 1800);
+  }, [user, username]);
+
   return (
     <>
       <div className="w-screen flex justify-between h-14 pt-4 text-contrast lg:max-w-7xl m-auto">
@@ -66,7 +88,11 @@ const Navbar = ({}) => {
               </CustomLink>
             </div>
           </div>
-          <div className="flex">
+          <div
+            className={`flex ${
+              loading ? "opacity-0" : "opacity-100"
+            } transition-all`}
+          >
             <div className="hidden lg:flex items-center lg:w-96 justify-end">
               <Link href="/settings">
                 <a className="circlehover hover:animate-[spin_1s] transition-all mr-2">
@@ -105,9 +131,7 @@ const Navbar = ({}) => {
       </div>
     </>
   );
-};
-
-export default Navbar;
+}
 
 function CogWheelIcon() {
   return (
