@@ -47,14 +47,16 @@ export function makeRandomId(length: number) {
   return result;
 }
 
-export function convertSecondsToMinutesAndSeconds(secondsInitial: number) {
-  if (secondsInitial <= 0) return { minutes: "00", seconds: "00" };
+export function convertMillisToMinutesAndSeconds(MillisInitial: number) {
+  if (MillisInitial <= 0) return { minutes: "00", seconds: "00" };
 
-  let minutes: string | number = Math.floor(secondsInitial / 60);
-  const seconds = padWithZeros(Math.floor(secondsInitial) - minutes * 60, 2);
+  let minutesNumber = Math.floor(MillisInitial / 60 / 1000);
+  const seconds = padWithZeros(
+    Math.floor(MillisInitial / 1000) - minutesNumber * 60,
+    2
+  );
 
-  minutes = padWithZeros(minutes, 2);
-
+  const minutes = padWithZeros(minutesNumber, 2);
   return { minutes, seconds };
 }
 

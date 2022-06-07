@@ -7,6 +7,7 @@ import {
   setDoc,
   Timestamp,
   updateDoc,
+  writeBatch,
 } from "firebase/firestore";
 import { NextPage, GetServerSideProps } from "next";
 import { useRouter } from "next/router";
@@ -15,8 +16,10 @@ import toast from "react-hot-toast";
 import useSound from "use-sound";
 import Board from "../components/Board";
 import Panel from "../components/Panel";
+import GameEndModal from "../components/GameEndModal";
 import SharePage from "../components/Sharepage";
 import { UserContext } from "../lib/context";
+import { db } from "../lib/firebase";
 import { gamesCollection, posFromSquare, squareFromPos } from "../lib/helpers";
 import { ChessgameProps, Vector } from "../types/types";
 
@@ -35,10 +38,10 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
   const [errorSound] = useSound("/sounds/Error.mp3");
 
   const router = useRouter();
+  // ! Fix so that username always is correct using Suspense.
   const [player, setPlayer] = useState<"w" | "b">(() => {
     if (gameData.players.w === username) return "w";
     else if (gameData.players.b === username) return "b";
-    else throw new Error("Session username does not match any game username");
   });
   const [usernames, setUsernames] = useState({
     w: gameData.players.w,
@@ -50,6 +53,7 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
     return chess;
   });
   const [gameHasStarted, setGameHasStarted] = useState(gameData.started);
+  const [result, setResult] = useState(gameData.result);
 
   const [whiteRemainingMillis, setWhiteRemainingMillis] = useState(() => {
     if (gameData.timeTracker !== null)
@@ -141,6 +145,7 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
   } | null>(null);
 
   const onClickHandler = ({ x, y }: Vector) => {
+    if (result !== null) return;
     const clickedPiece = chess.get(squareFromPos({ x, y }));
 
     if (firstClick === null) {
@@ -212,105 +217,98 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
 
   // Handling client-side time countdown and checking for time running out
   useEffect(() => {
+    if (!gameHasStarted || result !== null) return;
     let intervalId = setInterval(() => {
       if (chess.turn() === "w") {
         setWhiteRemainingMillis((current) => {
-          if (current - 1 <= 0) {
+          if (current - 1000 <= 0) {
             clearInterval(intervalId);
+            handleGameEnd({ winner: "b", cause: "timeout" });
           }
-          return current - 1;
+          return current - 1000;
         });
       } else if (chess.turn() === "b") {
         setBlackRemainingMillis((current) => {
-          if (current - 1 <= 0) {
+          if (current - 1000 <= 0) {
             clearInterval(intervalId);
+            handleGameEnd({ winner: "w", cause: "timeout" });
           }
-          return current - 1;
+          return current - 1000;
         });
       }
     }, 1000);
     return () => clearInterval(intervalId);
-  }, [chess.pgn()]);
+  }, [gameHasStarted, chess.pgn()]);
 
-  // Checking if time has run out
-  useEffect(() => {
-    if (whiteRemainingMillis <= 0) {
-      handleGameEnd({ winner: "b", cause: "timeout" });
-    } else if (blackRemainingMillis <= 0) {
-      handleGameEnd({ winner: "w", cause: "timeout" });
-    }
-  }, [whiteRemainingMillis, blackRemainingMillis]);
-
-  // Set up real time listener for the game to update when someone joins or moves a piece
+  // Set up real time listener for the game document
   useEffect(() => {
     const gameRef = doc(gamesCollection, gameId);
     const unsubscribe = onSnapshot(gameRef, (doc) => {
       const data = doc.data();
       if (data?.started === true) {
         setGameHasStarted(true);
-        setPgn(data.pgn);
+        setResult(data!.result);
+
         const chess = new Chess();
         chess.load_pgn(data.pgn);
         setChess(chess);
       }
     });
     return unsubscribe;
-  }, [gameId, usernames]);
+  }, [username]);
 
   // Whenever the board changes, we should write the pgn to the database
   useEffect(() => {
+    if (!gameHasStarted) return;
     const gameRef = doc(gamesCollection, gameId);
     updateDoc(gameRef, { pgn: chess.pgn() });
+
+    let whoMoved: "w" | "b";
+    if (chess.turn() === "w") whoMoved = "b";
+    else whoMoved = "w";
+    handleTimeUpdate(whoMoved);
   }, [chess.pgn()]);
 
-  // Handle time update. This function will always be called when we, not the opponent, move a piece.
-  const handleTimeUpdate = async (moveObject: {
-    color: string;
-    from: string;
-    to: string;
-    flags: string;
-    piece: string;
-    san: string;
-  }) => {
+  const handleTimeUpdate = async (whoMoved: "w" | "b") => {
+    if (result !== null) return;
     const gameRef = doc(gamesCollection, gameId);
     const gameDoc = await getDoc(gameRef);
-    const incrementInSeconds = gameDoc.data()!.increment;
-    const incrementInMillis = incrementInSeconds * 1000;
+    const incrementInMillis = gameDoc.data()!.increment * 1000;
     const nowInMillis = Timestamp.now().toMillis();
 
-    if (moveObject.color === "w") {
+    if (whoMoved === "w") {
       // White moved a piece. First set the endTimestamp for opponent. Then set the remaining time for white.
       const blackRemainingMillis =
-        gameDoc.data()!.timeTracker.b.remainingMillis;
-      const blackRemainingSeconds = blackRemainingMillis / 1000;
-      setBlackRemainingMillis(blackRemainingSeconds);
+        gameDoc.data()!.timeTracker!.b.remainingMillis;
+      setBlackRemainingMillis(blackRemainingMillis);
 
-      const blackEndTimestampMillis = nowInMillis + blackRemainingMillis!;
+      const blackEndMillis = nowInMillis + blackRemainingMillis;
+      const blackEndTimestamp = Timestamp.fromMillis(blackEndMillis);
       const whiteRemainingMillis =
-        gameDoc.data()!.timeTracker.w.endTimestamp -
+        Math.round(gameDoc.data()!.timeTracker!.w.endTimestamp.toMillis()) -
         nowInMillis +
         incrementInMillis;
-      setWhiteRemainingMillis(whiteRemainingMillis / 1000);
+      setWhiteRemainingMillis(whiteRemainingMillis);
 
       updateDoc(gameRef, {
-        "timeTracker.b.endTimestamp": blackEndTimestampMillis,
+        "timeTracker.b.endTimestamp": blackEndTimestamp,
         "timeTracker.w.remainingMillis": whiteRemainingMillis,
       });
-    } else if (moveObject.color === "b") {
+    } else if (whoMoved === "b") {
       const whiteRemainingMillis =
-        gameDoc.data()!.timeTracker.w.remainingMillis;
-      const whiteRemainingSeconds = whiteRemainingMillis / 1000;
-      setWhiteRemainingMillis(whiteRemainingSeconds);
+        gameDoc.data()!.timeTracker!.w.remainingMillis;
+      setWhiteRemainingMillis(whiteRemainingMillis);
 
-      const whiteEndTimestampMillis = nowInMillis + whiteRemainingMillis!;
+      const whiteEndMillis = nowInMillis + whiteRemainingMillis;
+      const whiteEndTimestamp = Timestamp.fromMillis(whiteEndMillis);
       const blackRemainingMillis =
-        gameDoc.data()!.timeTracker.b.endTimestamp -
+        Math.round(gameDoc.data()!.timeTracker!.b.endTimestamp.toMillis()) -
         nowInMillis +
         incrementInMillis;
-      setBlackRemainingMillis(blackRemainingMillis / 1000);
+      setBlackRemainingMillis(blackRemainingMillis);
 
       updateDoc(gameRef, {
-        "timeTracker.w.endTimestamp": whiteEndTimestampMillis,
+        "timeTracker.w.endTimestamp": whiteEndTimestamp,
         "timeTracker.b.remainingMillis": blackRemainingMillis,
       });
     }
@@ -325,23 +323,37 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
     cause: "timeout" | "resign" | "checkmate" | "draw";
   }) => {
     setResult({
-      ended: true,
       cause,
       winner,
     });
     const gameRef = doc(gamesCollection, gameId);
-    setDoc(
+
+    const batch = writeBatch(db);
+
+    batch.set(
       gameRef,
       {
         result: {
           winner,
           cause,
-          endTimestamp: serverTimestamp(),
         },
+        endTimestamp: serverTimestamp(),
         ongoing: false,
       },
       { merge: true }
-    ).catch((e) => {
+    );
+
+    if (winner === "w" && cause === "timeout") {
+      batch.update(gameRef, {
+        "timeTracker.b.remainingMillis": 0,
+      });
+    } else if (winner === "b" && cause === "timeout") {
+      batch.update(gameRef, {
+        "timeTracker.w.remainingMillis": 0,
+      });
+    }
+
+    batch.commit().catch((e) => {
       throw new Error("Problem setting game end on server: ", e.message);
     });
   };
@@ -351,22 +363,26 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
       <SharePage id={gameId} />
     </>
   ) : (
-    <main
-      className={`flex max-h-[75vh] sm:max-h-max origin-top scale-[40%] 320:scale-[52%] 360:scale-[60%] 440:scale-[70%] 500:scale-[80%] 560:scale-[90%] items-center mt-3 ${
-        player === "b" ? "flex-col-reverse" : "flex-col"
-      }`}
-    >
-      <Board
-        gameInstance={chess}
-        onClickHandler={onClickHandler}
-        clickedSquare={firstClick}
-        player={player}
-      />
-      <Panel
-        usernames={usernames}
-        timeRemaining={{ w: whiteRemainingMillis, b: blackRemainingMillis }}
-      />
-    </main>
+    <>
+      {result !== null && <GameEndModal onClose={() => {}} opened={true} />}
+      <main
+        className={`flex max-h-[75vh] sm:max-h-max origin-top scale-[40%] 320:scale-[52%] 360:scale-[60%] 440:scale-[70%] 500:scale-[80%] 560:scale-[90%] items-center mt-3 ${
+          player === "b" ? "flex-col-reverse" : "flex-col"
+        }`}
+      >
+        <Board
+          gameInstance={chess}
+          onClickHandler={onClickHandler}
+          clickedSquare={firstClick}
+          player={player}
+        />
+        <p className="absolute top-80 left-20 text-2xl">Turn: {chess.turn()}</p>
+        <Panel
+          usernames={usernames}
+          timeRemaining={{ w: whiteRemainingMillis, b: blackRemainingMillis }}
+        />
+      </main>
+    </>
   );
 };
 

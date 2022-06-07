@@ -20,16 +20,15 @@ export interface ChessgameProps {
   result: {
     winner: "w" | "b" | "draw";
     cause: "resign" | "timeout" | "checkmate" | "draw";
-    endTimestamp: Timestamp | null;
   } | null;
 
   timeTracker: {
     w: {
-      endTimestamp: number;
+      endTimestamp: Timestamp;
       remainingMillis: number;
     };
     b: {
-      endTimestamp: number;
+      endTimestamp: Timestamp;
       remainingMillis: number;
     };
   } | null;

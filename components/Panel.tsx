@@ -3,7 +3,7 @@ import { faChessKing } from "@fortawesome/free-solid-svg-icons";
 import { faChessKing as outlineKing } from "@fortawesome/free-regular-svg-icons";
 import { serverTimestamp } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { convertSecondsToMinutesAndSeconds } from "../lib/helpers";
+import { convertMillisToMinutesAndSeconds } from "../lib/helpers";
 
 const Panel = ({
   usernames,
@@ -37,8 +37,8 @@ const Timer = ({ time, username, player }: Props) => {
         <div>{username}</div>
       </div>
       <div className="text-xl font-semibold text-lightsquare bg-darker border-2 border-darksquare rounded-2xl px-2 select-none">
-        {convertSecondsToMinutesAndSeconds(time).minutes}:
-        {convertSecondsToMinutesAndSeconds(time).seconds}
+        {convertMillisToMinutesAndSeconds(time).minutes}:
+        {convertMillisToMinutesAndSeconds(time).seconds}
       </div>
     </div>
   );

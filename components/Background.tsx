@@ -60,12 +60,9 @@ const Tile = ({
   return (
     <div
       style={{
-        backgroundColor,
-        boxShadow: selected
-          ? "0px 0px 1px 35px hsl(39, 90%, 29%) inset"
-          : "0px 0px 1px 0px hsl(39, 90%, 29%) inset",
+        backgroundColor: selected ? "hsl(0, 0%, 28%)" : backgroundColor,
       }}
-      className="relative flex-1 select-none font-medium shadow-2xl transition-all ease-out duration-300"
+      className="relative flex-1 select-none font-medium transition-all ease-out duration-200"
       onClick={() => {
         onClickHandler({ x: col, y: row });
       }}

@@ -1,6 +1,9 @@
 import { useClipboard } from "@mantine/hooks";
-import { deleteDoc, doc } from "firebase/firestore";
+import { deleteDoc, doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
+import { useContext } from "react";
+import toast from "react-hot-toast";
+import { UserContext } from "../lib/context";
 import { gamesCollection } from "../lib/helpers";
 
 type Props = {
@@ -10,6 +13,7 @@ type Props = {
 function SharePage({ id }: Props) {
   const clipboard = useClipboard({ timeout: 800 });
   const router = useRouter();
+  const { user, username } = useContext(UserContext);
 
   return (
     <>
@@ -44,8 +48,19 @@ function SharePage({ id }: Props) {
             onClick={() => {
               const gameId = router.asPath.slice(1);
               const gameRef = doc(gamesCollection, gameId);
-              deleteDoc(gameRef).then(() => {
-                router.push("/");
+              getDoc(gameRef).then((game) => {
+                if (username === game.data()?.gameCreator) {
+                  deleteDoc(gameRef).then(() => {
+                    router.push("/");
+                  });
+                } else
+                  toast.error("You are not allowed to cancel this game", {
+                    style: {
+                      borderRadius: "10px",
+                      background: "#333",
+                      color: "#fff",
+                    },
+                  });
               });
             }}
           >
