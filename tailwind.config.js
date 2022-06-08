@@ -20,7 +20,7 @@ module.exports = {
         complementary: "hsl(22, 70%, 56%)",
       },
       screens: {
-        560: "560px",
+        600: "600px",
         500: "500px",
         440: "440px",
         360: "360px",

@@ -9,7 +9,7 @@ import { ErrorBoundary } from "../components/ErrorBoundary";
 import Head from "next/head";
 import BottomNav from "../components/BottomNav";
 import Footer from "../components/Footer";
-import { MantineProvider } from "@mantine/core";
+import { Loader, MantineProvider } from "@mantine/core";
 import { Toaster } from "react-hot-toast";
 
 type ExtendedAppProps = AppProps & {
@@ -19,7 +19,7 @@ type ExtendedAppProps = AppProps & {
 };
 
 function MyApp({ Component, pageProps }: ExtendedAppProps) {
-  const { user, username } = useUserData();
+  const { user, username, authLoading } = useUserData();
 
   return (
     <>
@@ -37,12 +37,26 @@ function MyApp({ Component, pageProps }: ExtendedAppProps) {
         <link rel="manifest" href="/site.webmanifest" />
       </Head>
 
-      <UserContext.Provider value={{ user, username }}>
+      <UserContext.Provider value={{ user, username, authLoading }}>
         <Toaster />
         <Navbar />
         <div className="max-w-6xl m-auto lg:px-12">
           <main className="p-8 pb-32 sm:pb-16 mt-4">
-            <Component {...pageProps} />
+            {authLoading ? (
+              <div className="flex justify-center h-[70vh] items-center">
+                <Loader size={"xl"} variant="oval" color={"orange"} />
+              </div>
+            ) : (
+              <Suspense
+                fallback={
+                  <div className="flex justify-center h-[70vh] items-center">
+                    <Loader size={"xl"} variant="oval" color={"orange"} />
+                  </div>
+                }
+              >
+                <Component {...pageProps} />
+              </Suspense>
+            )}
           </main>
           <nav className="sm:hidden">
             <BottomNav />

@@ -27,8 +27,14 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
   gameDataJSON,
   gameId,
 }) => {
-  const { user, username } = useContext(UserContext);
+  let { user, username, authLoading } = useContext(UserContext);
   const gameData: ChessgameProps = JSON.parse(gameDataJSON);
+
+  if (!username) {
+    throw new Promise<void>((resolve) => {
+      resolve();
+    });
+  }
 
   // Sounds
   const [moveSound] = useSound("/sounds/Move.mp3");
@@ -38,7 +44,6 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
   const [errorSound] = useSound("/sounds/Error.mp3");
 
   const router = useRouter();
-  // ! Fix so that username always is correct using Suspense.
   const [player, setPlayer] = useState<"w" | "b">(() => {
     if (gameData.players.w === username) return "w";
     else if (gameData.players.b === username) return "b";
@@ -54,7 +59,7 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
   });
   const [gameHasStarted, setGameHasStarted] = useState(gameData.started);
   const [result, setResult] = useState(() => {
-    if (gameData === null) return null;
+    if (gameData.result === null) return null;
     else {
       return { winner: gameData.result?.winner, cause: gameData.result?.cause };
     }
@@ -328,11 +333,15 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
     winner: "b" | "w" | "draw";
     cause: "timeout" | "resign" | "checkmate" | "draw";
   }) => {
+    const gameRef = doc(gamesCollection, gameId);
+    const snapshot = await getDoc(gameRef);
+
+    if (snapshot.data()?.result !== null) return;
+
     setResult({
       cause,
       winner,
     });
-    const gameRef = doc(gamesCollection, gameId);
 
     const batch = writeBatch(db);
 
@@ -384,7 +393,7 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
         />
       )}
       <main
-        className={`flex max-h-[75vh] sm:max-h-max origin-top scale-[40%] 320:scale-[52%] 360:scale-[60%] 440:scale-[70%] 500:scale-[80%] 560:scale-[90%] items-center mt-3 ${
+        className={`flex origin-top scale-[40%] 320:scale-[52%] 360:scale-[60%] 440:scale-[70%] 500:scale-[80%] 600:scale-[100%] items-center mt-3 ${
           player === "b" ? "flex-col-reverse" : "flex-col"
         }`}
       >
@@ -394,12 +403,26 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
           clickedSquare={firstClick}
           player={player}
         />
-        <p className="absolute top-80 left-20 text-2xl">Turn: {chess.turn()}</p>
         <Panel
           usernames={usernames}
           timeRemaining={{ w: whiteRemainingMillis, b: blackRemainingMillis }}
         />
       </main>
+      <section className="flex justify-center items-center relative -top-[442px] 320:-top-[354px] 360:-top-[295px] 440:-top-[222px] 500:-top-[148px] 600:top-[0px]">
+        <div className="mt-4">
+          <button
+            onClick={() => {
+              handleGameEnd({
+                winner: player === "w" ? "b" : "w",
+                cause: "resign",
+              });
+            }}
+            className="px-12 py-2 rounded-lg border-2 bg-darker border-darklight hover:bg-darklight hover:border-darker transition-all"
+          >
+            Resign
+          </button>
+        </div>
+      </section>
     </>
   );
 };
