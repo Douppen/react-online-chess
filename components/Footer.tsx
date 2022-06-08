@@ -22,7 +22,7 @@ function Footer({}: Props) {
           </div>
           <div>
             <p>
-              &copy; chesswebsite.com | All rights reserved | Version: 1.0.41{" "}
+              &copy; choppychess.com | All rights reserved | Version: 1.0.41{" "}
             </p>
           </div>
         </div>

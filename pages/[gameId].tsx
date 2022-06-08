@@ -47,6 +47,7 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
   const [player, setPlayer] = useState<"w" | "b">(() => {
     if (gameData.players.w === username) return "w";
     else if (gameData.players.b === username) return "b";
+    else return "w";
   });
   const [usernames, setUsernames] = useState({
     w: gameData.players.w,
@@ -131,7 +132,7 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
             // User is not the one who initiated the game and the game can start with user being white
             updateDoc(gameRef, { started: true, "players.w": username });
             setPlayer("w");
-            setUsernames({ w: username, b: players.b });
+            setUsernames({ w: username!, b: players.b });
             initiateTimeTracker();
           }
         } else if (players.b === null) {
@@ -140,7 +141,7 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
             // User is not the one who initiated the game and the game can start with user being black
             updateDoc(gameRef, { started: true, "players.b": username });
             setPlayer("b");
-            setUsernames({ b: username, w: players.w });
+            setUsernames({ b: username!, w: players.w });
             initiateTimeTracker();
           }
         }

@@ -180,6 +180,7 @@ export default function GameEndModal({
       ongoing: true,
       started: true,
       pgn: "",
+      //@ts-ignore
       players: {
         [color]: username,
         [opponentColor]: opponentUsername,

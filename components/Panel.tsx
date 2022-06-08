@@ -9,7 +9,7 @@ const Panel = ({
   usernames,
   timeRemaining,
 }: {
-  usernames: { w: string; b: string };
+  usernames: { w: string | null | undefined; b: string | null | undefined };
   timeRemaining: { b: number; w: number };
 }) => {
   return (
@@ -26,7 +26,7 @@ const Panel = ({
 
 interface Props {
   time: any;
-  username: string;
+  username: string | null | undefined;
   player: "w" | "b";
 }
 

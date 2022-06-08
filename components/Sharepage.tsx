@@ -24,8 +24,8 @@ function SharePage({ id }: Props) {
         <div className="bg-dark shadow-lg rounded-lg p-4 space-y-2">
           <p>To invite someone to play, give this URL:</p>
           <div className="flex items-center">
-            <p className=" p-2 rounded-lg bg-darklight">
-              https://onlinechesss.com/{id}
+            <p className=" p-2 pr-4 rounded-lg bg-darklight">
+              https://choppychess.com/{id}
             </p>
             <button
               className={`${

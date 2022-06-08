@@ -52,6 +52,7 @@ const Home: ExtendedNextPage = () => {
       ongoing: true,
       started: false,
       pgn: "",
+      //@ts-ignore
       players: {
         [color]: username,
         [opponentColor]: null,
