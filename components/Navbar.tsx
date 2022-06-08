@@ -49,7 +49,7 @@ export default function Navbar() {
                     <path d="M21.3572 110.257C18.8306 112.775 20.6137 117.091 24.1807 117.091H31.8472C32.9057 117.091 33.921 116.671 34.6707 115.924L91.8041 58.9897C92.5687 58.2278 92.9974 57.1697 92.9628 56.0908C91.6309 14.5499 59.6919 0 37 0L9.68071 4.98399e-05C6.11373 5.63474e-05 4.3306 4.31557 6.85723 6.83341L11.8293 11.7881C12.579 12.5353 13.5943 12.9548 14.6528 12.9548H42.5C57.6144 12.9548 78.4341 29.0631 79.4605 50.6542C79.511 51.7163 79.0767 52.739 78.3235 53.4895L21.3572 110.257Z" />
                     <path d="M37 35.8746C37 39.7271 33.866 42.8502 30 42.8502C26.134 42.8502 23 39.7271 23 35.8746C23 32.022 26.134 28.899 30 28.899C33.866 28.899 37 32.022 37 35.8746Z" />
                   </svg>
-                  <h2 className="text-[24px] tracking-wide flex-[0.4] flex justify-center">
+                  <h2 className="text-[24px] hidden sm:flex tracking-wide flex-[0.4] justify-center">
                     choppychess
                   </h2>
                 </div>
@@ -118,10 +118,12 @@ export default function Navbar() {
               {!username ? (
                 <>
                   <Link href="/login">
-                    <button className="px-8 ml-2 orangebutton">Sign up</button>
+                    <button className="px-4 sm:px-8 ml-2 orangebutton">
+                      Sign up
+                    </button>
                   </Link>
                   <Link href="/login">
-                    <button className="font-medium px-8 hover:underline decoration-complementary underline-offset-[6px]">
+                    <button className="font-medium px-4 sm:px-8 hover:underline decoration-complementary underline-offset-[6px]">
                       Log in
                     </button>
                   </Link>

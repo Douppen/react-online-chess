@@ -56,7 +56,7 @@ function MyApp({ Component, pageProps }: ExtendedAppProps) {
               </Suspense>
             )}
           </main>
-          <nav className="sm:hidden">
+          <nav className="hidden">
             <BottomNav />
           </nav>
         </div>
