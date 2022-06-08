@@ -10,16 +10,7 @@ type Props = {
 
 // TODO! useState and useEffect should be used correctly below...
 const Piece = ({ color, type, pos, player }: Props) => {
-  const [space, setSpace] = useState(75);
-
-  useEffect(() => {
-    let sizeString = getComputedStyle(
-      document.documentElement
-    ).getPropertyValue("--board-size");
-    sizeString = sizeString.slice(0, sizeString.indexOf("p"));
-    const size = Number(sizeString);
-    setSpace(size / 8);
-  }, []);
+  const space = 75;
 
   const src = `/pieces/${type}-${color}.svg`;
   return (

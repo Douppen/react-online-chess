@@ -4,8 +4,6 @@ import Navbar from "../components/Navbar";
 import { UserContext } from "../lib/context";
 import { Suspense, useState } from "react";
 import { useUserData } from "../lib/hooks";
-import ChooseUsername from "../components/ChooseUsername";
-import { ErrorBoundary } from "../components/ErrorBoundary";
 import Head from "next/head";
 import BottomNav from "../components/BottomNav";
 import Footer from "../components/Footer";
