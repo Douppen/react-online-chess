@@ -2,7 +2,11 @@ import { Square } from "chess.js";
 import {
   collection,
   CollectionReference,
+  doc,
   DocumentData,
+  getDoc,
+  serverTimestamp,
+  setDoc,
 } from "firebase/firestore";
 import { ChessgameProps } from "../types/types";
 import { db } from "./firebase";

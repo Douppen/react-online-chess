@@ -53,7 +53,12 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
     return chess;
   });
   const [gameHasStarted, setGameHasStarted] = useState(gameData.started);
-  const [result, setResult] = useState(gameData.result);
+  const [result, setResult] = useState(() => {
+    if (gameData === null) return null;
+    else {
+      return { winner: gameData.result?.winner, cause: gameData.result?.cause };
+    }
+  });
 
   const [whiteRemainingMillis, setWhiteRemainingMillis] = useState(() => {
     if (gameData.timeTracker !== null)
@@ -215,6 +220,7 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
     }
   };
 
+  // TODO fix so that refreshing makes the time correct locally
   // Handling client-side time countdown and checking for time running out
   useEffect(() => {
     if (!gameHasStarted || result !== null) return;
@@ -238,7 +244,7 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
       }
     }, 1000);
     return () => clearInterval(intervalId);
-  }, [gameHasStarted, chess.pgn()]);
+  }, [gameHasStarted, chess.pgn(), username]);
 
   // Set up real time listener for the game document
   useEffect(() => {
@@ -336,6 +342,10 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
         result: {
           winner,
           cause,
+          rematchRequested: {
+            w: false,
+            b: false,
+          },
         },
         endTimestamp: serverTimestamp(),
         ongoing: false,
@@ -364,7 +374,15 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
     </>
   ) : (
     <>
-      {result !== null && <GameEndModal onClose={() => {}} opened={true} />}
+      {result !== null && (
+        <GameEndModal
+          onClose={() => {}}
+          opened={true}
+          result={result}
+          usernames={usernames}
+          username={username}
+        />
+      )}
       <main
         className={`flex max-h-[75vh] sm:max-h-max origin-top scale-[40%] 320:scale-[52%] 360:scale-[60%] 440:scale-[70%] 500:scale-[80%] 560:scale-[90%] items-center mt-3 ${
           player === "b" ? "flex-col-reverse" : "flex-col"

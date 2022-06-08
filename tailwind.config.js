@@ -26,6 +26,19 @@ module.exports = {
         360: "360px",
         320: "320px",
       },
+      keyframes: {
+        hover: {
+          "0%": {
+            transform: "translateY(0px)",
+          },
+          "50%": {
+            transform: "translateY(8px)",
+          },
+          "100%": {
+            transform: "translateY(0px)",
+          },
+        },
+      },
     },
   },
   plugins: [],

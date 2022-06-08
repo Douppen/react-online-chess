@@ -20,6 +20,11 @@ export interface ChessgameProps {
   result: {
     winner: "w" | "b" | "draw";
     cause: "resign" | "timeout" | "checkmate" | "draw";
+    rematchRequested: {
+      w: boolean;
+      b: boolean;
+      newGameId: string;
+    };
   } | null;
 
   timeTracker: {
