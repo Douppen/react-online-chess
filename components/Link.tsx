@@ -8,6 +8,12 @@ export function Link({
   className,
   children,
   ...rest
+}: {
+  href: string;
+  activeClassName?: string;
+  inactiveClassName?: string;
+  className?: string;
+  children: (props: { isActive: boolean }) => React.ReactNode;
 }) {
   const router = useRouter();
 
