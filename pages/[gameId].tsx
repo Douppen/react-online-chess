@@ -23,18 +23,23 @@ import { db } from "../lib/firebase";
 import { gamesCollection, posFromSquare, squareFromPos } from "../lib/helpers";
 import { ChessgameProps, Vector } from "../types/types";
 
-const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
+import { withAuthUserSSR } from "next-firebase-auth";
+
+interface Props {
+  gameDataJSON: string;
+  gameId: string;
+  serverUsername: string | null;
+}
+
+const Chessgame: NextPage<Props> = ({
   gameDataJSON,
   gameId,
+  serverUsername,
 }) => {
-  let { user, username, authLoading } = useContext(UserContext);
+  let { user, username } = useContext(UserContext);
   const gameData: ChessgameProps = JSON.parse(gameDataJSON);
 
-  if (!username) {
-    throw new Promise<void>((resolve) => {
-      resolve();
-    });
-  }
+  if (serverUsername !== null) username = serverUsername;
 
   // Sounds
   const [moveSound] = useSound("/sounds/Move.mp3");
@@ -428,27 +433,38 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  let gameId = context.params?.gameId;
-  if (typeof gameId === "object") gameId = gameId[0];
-  let gameRef = doc(gamesCollection, gameId);
-  const gameSnap = await getDoc(gameRef);
+export const getServerSideProps = withAuthUserSSR({})(
+  async ({ AuthUser, params }) => {
+    let gameId = params?.gameId;
+    if (typeof gameId === "object") gameId = gameId[0];
+    let gameRef = doc(gamesCollection, gameId);
+    const gameSnap = await getDoc(gameRef);
 
-  if (!gameSnap.exists()) {
+    if (!gameSnap.exists()) {
+      return {
+        notFound: true,
+      };
+    }
+
+    const gameData = gameSnap.data();
+    const gameDataJSON = JSON.stringify(gameData);
+
+    let serverUsername: null | string = null;
+
+    if (AuthUser.id !== null) {
+      const userRef = doc(db, "users", AuthUser.id);
+      const userSnapshot = await getDoc(userRef);
+      serverUsername = userSnapshot.data()!.username;
+    }
+
     return {
-      notFound: true,
+      props: {
+        gameDataJSON,
+        gameId,
+        serverUsername,
+      },
     };
   }
-
-  const gameData = gameSnap.data();
-  const gameDataJSON = JSON.stringify(gameData);
-
-  return {
-    props: {
-      gameDataJSON,
-      gameId,
-    },
-  };
-};
+);
 
 export default Chessgame;

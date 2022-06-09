@@ -1,19 +1,10 @@
-import { Burger, Loader } from "@mantine/core";
-import { onAuthStateChanged, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { NextPage } from "next";
 import Link from "next/link";
-import {
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { useContext, useEffect, useState } from "react";
 import { suspend } from "suspend-react";
 import { UserContext } from "../lib/context";
 import { auth, db } from "../lib/firebase";
-import { useUserData } from "../lib/hooks";
 import { Link as CustomLink } from "./Link";
 
 export default function Navbar() {
@@ -21,12 +12,9 @@ export default function Navbar() {
   const { user, username } = useContext(UserContext);
 
   useEffect(() => {
-    if (username) {
-      setLoading(false);
-    }
     setTimeout(() => {
       setLoading(false);
-    }, 1800);
+    }, 800);
   }, [user, username]);
 
   return (
@@ -115,7 +103,7 @@ export default function Navbar() {
                   </a>
                 </Link>
               </div>
-              {!username ? (
+              {!user ? (
                 <>
                   <Link href="/login">
                     <button className="px-4 sm:px-8 ml-2 orangebutton">

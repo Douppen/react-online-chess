@@ -21,7 +21,7 @@ type ExtendedAppProps = AppProps & {
 };
 
 function MyApp({ Component, pageProps }: ExtendedAppProps) {
-  const { user, username, authLoading } = useUserData();
+  const { user, username } = useUserData();
 
   return (
     <>
@@ -39,26 +39,12 @@ function MyApp({ Component, pageProps }: ExtendedAppProps) {
         <link rel="manifest" href="/site.webmanifest" />
       </Head>
 
-      <UserContext.Provider value={{ user, username, authLoading }}>
+      <UserContext.Provider value={{ user, username }}>
         <Toaster />
         <Navbar />
         <div className="max-w-6xl m-auto lg:px-12">
           <main className="p-8 pb-32 sm:pb-16 mt-4">
-            {authLoading ? (
-              <div className="flex justify-center h-[70vh] items-center">
-                <Loader size={"xl"} variant="oval" color={"orange"} />
-              </div>
-            ) : (
-              <Suspense
-                fallback={
-                  <div className="flex justify-center h-[70vh] items-center">
-                    <Loader size={"xl"} variant="oval" color={"orange"} />
-                  </div>
-                }
-              >
-                <Component {...pageProps} />
-              </Suspense>
-            )}
+            <Component {...pageProps} />
           </main>
           <nav className="hidden">
             <BottomNav />

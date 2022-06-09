@@ -16,12 +16,18 @@ import { GameModalProps } from "../types/types";
 import nookies from "nookies";
 import { getFirebaseAdmin } from "next-firebase-auth";
 
+import {
+  useAuthUser,
+  withAuthUser,
+  withAuthUserTokenSSR,
+  AuthAction,
+} from "next-firebase-auth";
+
 type ExtendedNextPage = NextPage & {
   pageName: string;
-  message: { text: string };
 };
 
-const Home: ExtendedNextPage = ({ message }) => {
+const Home: ExtendedNextPage = () => {
   const { user, username } = useContext(UserContext);
   const [modal, setModal] = useState<GameModalProps>({
     isOpen: false,
@@ -87,8 +93,8 @@ const Home: ExtendedNextPage = ({ message }) => {
       />
       <main>
         <h1 className="mb-6 page-header">Play</h1>
-        <h1 className="text-xl">{message.text}</h1>
         <p className="mb-4 text-xl font-medium">Quick pairing</p>
+
         <div className="flex mb-10 space-x-2 overflow-x-auto hide-scroll">
           <SquareButton
             onClick={() => {}}
@@ -184,40 +190,15 @@ const Home: ExtendedNextPage = ({ message }) => {
 };
 
 Home.pageName = "index";
-export default Home;
+export default withAuthUser<ExtendedNextPage>()(Home);
 
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const authAdmin = await getFirebaseAdmin().auth();
-  try {
-    const cookies = nookies.get(context);
-    const token = await authAdmin.verifyIdToken(cookies.token);
-
-    // the user is authenticated!
-    const { uid, email } = token;
-
-    // FETCH STUFF HERE!! 🚀
-
+export const getServerSideProps = withAuthUserTokenSSR({})(
+  async ({ AuthUser }) => {
     return {
-      props: {
-        message: {
-          text: `Your email is ${email} and your UID is ${uid}.`,
-        },
-      },
+      props: {},
     };
-  } catch (err) {
-    // either the `token` cookie didn't exist
-    // or token verification failed
-    // either way: redirect to the login page
-    context.res.writeHead(302, { Location: "/login" });
-    context.res.end();
-
-    // `as never` prevents inference issues
-    // with InferGetServerSidePropsType.
-    // The props returned here don't matter because we've
-    // already redirected the user.
-    return { props: {} as never };
   }
-}
+);
 
 function SquareButton({
   smallText,
