@@ -1,9 +1,9 @@
-import { User } from "firebase/auth";
+import { onIdTokenChanged, User } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { GameModalProps } from "../types/types";
 import { auth, db } from "./firebase";
+import nookies from "nookies";
 
 // Custom hook for retrieving the current user and username whenever the user changes
 export function useUserData(): {
@@ -11,26 +11,22 @@ export function useUserData(): {
   username: string | null;
   authLoading: boolean;
 } {
-  const [user] = useAuthState(auth);
+  const [user, setUser] = useState<User | null>(null);
   const [username, setUsername] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    let unsubscribe;
-
-    if (user) {
-      const ref = doc(db, "users", user.uid);
-      unsubscribe = onSnapshot(ref, (doc) => {
-        setUsername(doc.data()?.username);
-        setIsLoading(false);
-      });
-    } else {
-      setUsername(null);
-      setIsLoading(false);
-    }
-
-    return unsubscribe;
-  }, [user]);
+    return onIdTokenChanged(auth, async (user) => {
+      if (!user) {
+        setUser(null);
+        nookies.set(undefined, "token", "", { path: "/" });
+      } else {
+        const token = await user.getIdToken();
+        setUser(user);
+        nookies.set(undefined, "token", token, { path: "/" });
+      }
+    });
+  }, []);
 
   return { user, username, authLoading: isLoading };
 }

@@ -10,6 +10,10 @@ import Footer from "../components/Footer";
 import { Loader, MantineProvider } from "@mantine/core";
 import { Toaster } from "react-hot-toast";
 
+import initAuth from "../lib/nextFirebaseAuth";
+
+initAuth();
+
 type ExtendedAppProps = AppProps & {
   Component: {
     pageName?: string;
