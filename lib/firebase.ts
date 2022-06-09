@@ -8,12 +8,12 @@ import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyCAA7ChweLDgo2xaTVa-6TBSslgTOhh6sw",
+  authDomain: "online-chess-7035c.firebaseapp.com",
+  projectId: "online-chess-7035c",
+  storageBucket: "online-chess-7035c.appspot.com",
+  messagingSenderId: "580958851838",
+  appId: "1:580958851838:web:bedb2e12fb10d5b4268baf",
 };
 
 // Initialize Firebase
