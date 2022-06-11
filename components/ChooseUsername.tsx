@@ -99,22 +99,24 @@ const ChooseUsername = () => {
   );
 
   return (
-    <div className="mx-auto w-[80vw] max-w-md mt-[5vh] border-2 p-6 rounded-xl relative border-tertiary">
+    <div className="mx-auto w-[80vw] max-w-md mt-[5vh] border-2 p-6 rounded-xl relative border-darksquare bg-dark">
       <div className="flex-col flex items-center">
-        <p className="text-xl mb-4 text-primary">Please choose a username</p>
+        <p className="text-xl mb-4 text-contrast">Please choose a username</p>
         <form
-          className="flex space-x-1 mb-4"
+          className="flex space-x-1 mb-4 items-center"
           action="submit"
           onSubmit={onSubmit}
         >
           <TextInput
-            placeholder="thegrandmaster"
+            placeholder="your username"
             onChange={onChange}
             value={formValue}
           />
           <button
             type="submit"
-            className={`${!isValid ? "disabled" : "button"} px-2`}
+            className={`${
+              !isValid ? "disabled py-2 w-18 mx-0" : "orangebutton w-18 mx-0"
+            } px-2`}
             disabled={!isValid}
           >
             Choose
@@ -147,11 +149,11 @@ function UsernameMessage({
   if (loading) {
     return <p>Checking...</p>;
   } else if (username && isValid) {
-    return <p className="text-green-900">{username} is available!</p>;
+    return <p className="text-green-400">{username} is available!</p>;
   } else if (username && !isValid && tooShort) {
-    return <p className="text-red-900">That username is too short!</p>;
+    return <p className="text-red-400">That username is too short!</p>;
   } else if (username && !isValid) {
-    return <p className="text-red-900">That username is taken!</p>;
+    return <p className="text-red-400">That username is taken!</p>;
   } else {
     return <p></p>;
   }

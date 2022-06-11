@@ -26,7 +26,7 @@ function MyApp({ Component, pageProps }: ExtendedAppProps) {
   return (
     <>
       <Head>
-        <title>Onlinechesss</title>
+        <title>Choppychess | Play Chess Online</title>
         <meta
           name="description"
           content="Play chess online and challenge your friends"

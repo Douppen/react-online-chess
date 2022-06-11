@@ -23,12 +23,12 @@ import { db } from "../lib/firebase";
 import { gamesCollection, posFromSquare, squareFromPos } from "../lib/helpers";
 import { ChessgameProps, Vector } from "../types/types";
 
-import { withAuthUserSSR } from "next-firebase-auth";
+import { withAuthUserSSR, AuthAction } from "next-firebase-auth";
 
 interface Props {
   gameDataJSON: string;
   gameId: string;
-  serverUsername: string | null;
+  serverUsername: string;
 }
 
 const Chessgame: NextPage<Props> = ({
@@ -40,6 +40,8 @@ const Chessgame: NextPage<Props> = ({
   const gameData: ChessgameProps = JSON.parse(gameDataJSON);
 
   if (serverUsername !== null) username = serverUsername;
+
+  console.log("Rendered");
 
   // Sounds
   const [moveSound] = useSound("/sounds/Move.mp3");
@@ -124,10 +126,8 @@ const Chessgame: NextPage<Props> = ({
         } else {
           // User is not one of the ones who created the game
           // ! Redirect to the home page. Maybe should enter spectator mode?
+          toast.error("You are not one of the players in this game.");
           router.push("/");
-          toast(
-            "You are not one of the players in this game. You can spectate if you want..."
-          );
         }
       } else {
         // One of the players has not arrived yet
@@ -433,38 +433,51 @@ const Chessgame: NextPage<Props> = ({
   );
 };
 
-export const getServerSideProps = withAuthUserSSR({})(
-  async ({ AuthUser, params }) => {
-    let gameId = params?.gameId;
-    if (typeof gameId === "object") gameId = gameId[0];
-    let gameRef = doc(gamesCollection, gameId);
-    const gameSnap = await getDoc(gameRef);
+export const getServerSideProps = withAuthUserSSR({
+  whenUnauthed: AuthAction.REDIRECT_TO_LOGIN,
+})(async ({ AuthUser, params }) => {
+  let gameId = params?.gameId;
+  if (typeof gameId === "object") gameId = gameId[0];
+  let gameRef = doc(gamesCollection, gameId);
+  const gameSnap = await getDoc(gameRef);
 
-    if (!gameSnap.exists()) {
-      return {
-        notFound: true,
-      };
-    }
-
-    const gameData = gameSnap.data();
-    const gameDataJSON = JSON.stringify(gameData);
-
-    let serverUsername: null | string = null;
-
-    if (AuthUser.id !== null) {
-      const userRef = doc(db, "users", AuthUser.id);
-      const userSnapshot = await getDoc(userRef);
-      serverUsername = userSnapshot.data()!.username;
-    }
-
+  if (!gameSnap.exists()) {
     return {
-      props: {
-        gameDataJSON,
-        gameId,
-        serverUsername,
-      },
+      notFound: true,
     };
   }
-);
+
+  const gameData = gameSnap.data();
+  const gameDataJSON = JSON.stringify(gameData);
+
+  let serverUsername: string;
+
+  if (AuthUser.id === null) {
+    return {
+      redirect: {
+        destination: "/login",
+      },
+    };
+  } else {
+    const userRef = doc(db, "users", AuthUser.id);
+    const userSnapshot = await getDoc(userRef);
+    serverUsername = userSnapshot.data()!.username;
+    if (serverUsername === null || serverUsername === undefined) {
+      return {
+        redirect: {
+          destination: "/login",
+        },
+      };
+    }
+  }
+
+  return {
+    props: {
+      gameDataJSON,
+      gameId,
+      serverUsername,
+    },
+  };
+});
 
 export default Chessgame;

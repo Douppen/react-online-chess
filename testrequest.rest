@@ -1,0 +1,7 @@
+GET http://localhost:3000/api/test
+Content-Type: application/json
+Authorization: Bearer secret
+
+{
+  "name": "John Doe"
+}
