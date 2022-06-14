@@ -41,20 +41,26 @@ function MyApp({ Component, pageProps }: ExtendedAppProps) {
 
       <UserContext.Provider value={{ user, username }}>
         <Toaster />
-        <Navbar />
-        <div className="max-w-6xl m-auto lg:px-12">
-          <main className="p-8 pb-32 sm:pb-16 mt-4">
-            <Component {...pageProps} />
+        <div className="min-h-screen relative">
+          <Navbar />
+          <main
+            className={`max-w-6xl mx-auto lg:px-12 ${
+              Component.pageName === "index" ? "pb-[400px]" : ""
+            } flex-1`}
+          >
+            <div className="p-8 pb-32 sm:pb-16 mt-4">
+              <Component {...pageProps} />
+            </div>
           </main>
+          {Component.pageName === "index" && (
+            <div className="hidden sm:inline-block absolute w-full bottom-0">
+              <Footer />
+            </div>
+          )}
           <nav className="hidden">
             <BottomNav />
           </nav>
         </div>
-        {Component.pageName === "index" && (
-          <div className="hidden sm:inline">
-            <Footer />
-          </div>
-        )}
       </UserContext.Provider>
     </>
   );
