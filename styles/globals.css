@@ -50,6 +50,7 @@
 }
 
 html {
-  background: linear-gradient(55deg, #693c0f, #051218, #051218, #be890e);
-  background-size: 200% 200%;
+  background: linear-gradient(55deg, #051218, #051218 80%, #55310c),
+    linear-gradient(130deg, #26697552, #120f0c00 30%);
+  background-blend-mode: screen;
 }
