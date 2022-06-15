@@ -43,3 +43,5 @@ storage*
 # Firebase Hosting
 .firebaserc
 firebase-debug.log
+
+# Something
