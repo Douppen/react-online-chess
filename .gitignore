@@ -44,4 +44,9 @@ storage*
 .firebaserc
 firebase-debug.log
 
-# Something
+# UI debug
+ui-debug.log
+
+# Other
+next-env.d.ts
+next.config.js
