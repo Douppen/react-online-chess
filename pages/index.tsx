@@ -22,6 +22,7 @@ import {
   withAuthUserTokenSSR,
   AuthAction,
 } from "next-firebase-auth";
+import toast from "react-hot-toast";
 
 type ExtendedNextPage = NextPage & {
   pageName: string;
@@ -89,7 +90,7 @@ const Home: ExtendedNextPage = () => {
         setModal={changeModal}
         modal={modal}
         onClose={() => setModal({ ...modal, isOpen: false })}
-        opened={modal.isOpen}
+        opened={modal.isOpen && username !== null && username !== undefined}
       />
       <main>
         <h1 className="mb-6 page-header">Play</h1>
@@ -205,22 +206,34 @@ function SquareButton({
   bigText,
   icon,
   onClick,
+  ...rest
 }: {
   smallText: string;
   bigText: string;
   icon: any;
   onClick: () => void;
 }) {
+  const { username } = useContext(UserContext);
+
   return (
     <button
-      onClick={() => onClick()}
-      className="flex shrink-0 flex-col group hover:border-indigo-500 transition-all duration-150 cursor-pointer items-center justify-center bg-dark border-[1px] border-slate-600 rounded-lg p-2 w-24 h-24"
+      id="parent-button"
+      onClick={() => {
+        if (username !== null && username !== undefined) {
+          onClick();
+        } else {
+          toast.error("You must be logged in to play");
+        }
+      }}
+      className="flex shrink-0 flex-col group enabled:hover:border-indigo-500 transition-all duration-150 cursor-pointer items-center justify-center bg-dark border-[1px] border-slate-600 rounded-lg p-2 w-24 h-24 disabled:cursor-not-allowed child:text-complementary child:hover:text-indigo-500 child:disabled:text-slate-600 disabled:bg-dark/80"
+      {...rest}
+      disabled={username === null || username === undefined}
     >
-      <div className="transition-all duration-150 text-complementary group-hover:text-indigo-500">
-        {icon}
-      </div>
+      <div className="transition-all duration-150">{icon}</div>
       <div className="flex flex-col items-center justify-center">
-        <p className="text-md font-semibold text-contrast">{bigText}</p>
+        <p className="text-md font-semibold text-contrast group-disabled:text-gray-400">
+          {bigText}
+        </p>
         <p className="text-xs text-description">{smallText}</p>
       </div>
     </button>
@@ -238,16 +251,27 @@ function RectangleButton({
   icon: any;
   onClick: () => void;
 }) {
+  const { username } = useContext(UserContext);
+
   return (
     <button
-      onClick={() => onClick()}
-      className="flex items-center hover:border-indigo-500 transition-all duration-150 cursor-pointer group bg-dark border-[1px] border-slate-600 rounded-lg grow p-2 h-20"
+      onClick={() => {
+        if (username !== null && username !== undefined) {
+          onClick();
+        } else {
+          toast.error("You must be logged in to play");
+        }
+      }}
+      className="flex items-center enabled:hover:border-indigo-500 transition-all duration-150 cursor-pointer group bg-dark border-[1px] border-slate-600 rounded-lg grow p-2 h-20 disabled:cursor-not-allowed child:text-complementary child:hover:text-indigo-500 child:disabled:text-slate-600 disabled:bg-dark/80"
+      disabled={username === null || username === undefined}
     >
-      <div className="flex items-center justify-center w-10 ml-6 transition-all duration-150 text-complementary group-hover:text-indigo-500">
+      <div className="flex items-center justify-center w-10 ml-6 transition-all duration-150">
         {icon}
       </div>
       <div className="flex flex-col ml-6">
-        <p className="text-md font-semibold text-contrast">{bigText}</p>
+        <p className="text-md font-semibold text-contrast group-disabled:text-gray-400">
+          {bigText}
+        </p>
         <p className="text-sm text-description">{smallText}</p>
       </div>
     </button>
