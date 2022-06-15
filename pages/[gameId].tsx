@@ -23,18 +23,32 @@ import { db } from "../lib/firebase";
 import { gamesCollection, posFromSquare, squareFromPos } from "../lib/helpers";
 import { ChessgameProps, Vector } from "../types/types";
 
-const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
+import {
+  withAuthUserSSR,
+  AuthAction,
+  withAuthUser,
+  AuthUser,
+  SSRPropGetter,
+} from "next-firebase-auth";
+import { Params } from "next/dist/server/router";
+
+interface Props {
+  gameDataJSON: string;
+  gameId: string;
+  serverUsername: string;
+}
+
+const Chessgame: NextPage<Props> = ({
   gameDataJSON,
   gameId,
+  serverUsername,
 }) => {
-  let { user, username, authLoading } = useContext(UserContext);
+  let { user, username } = useContext(UserContext);
   const gameData: ChessgameProps = JSON.parse(gameDataJSON);
 
-  if (!username) {
-    throw new Promise<void>((resolve) => {
-      resolve();
-    });
-  }
+  if (serverUsername !== null) username = serverUsername;
+
+  console.log("Rendered");
 
   // Sounds
   const [moveSound] = useSound("/sounds/Move.mp3");
@@ -119,10 +133,8 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
         } else {
           // User is not one of the ones who created the game
           // ! Redirect to the home page. Maybe should enter spectator mode?
+          toast.error("You are not one of the players in this game.");
           router.push("/");
-          toast(
-            "You are not one of the players in this game. You can spectate if you want..."
-          );
         }
       } else {
         // One of the players has not arrived yet
@@ -428,8 +440,11 @@ const Chessgame: NextPage<{ gameDataJSON: string; gameId: string }> = ({
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  let gameId = context.params?.gameId;
+export const getServerSideProps = withAuthUserSSR({
+  whenUnauthed: AuthAction.REDIRECT_TO_LOGIN,
+  // @ts-ignore
+})(async ({ AuthUser, params }) => {
+  let gameId = params?.gameId;
   if (typeof gameId === "object") gameId = gameId[0];
   let gameRef = doc(gamesCollection, gameId);
   const gameSnap = await getDoc(gameRef);
@@ -443,12 +458,34 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const gameData = gameSnap.data();
   const gameDataJSON = JSON.stringify(gameData);
 
+  let serverUsername: string;
+
+  if (AuthUser.id === null) {
+    return {
+      redirect: {
+        destination: "/login",
+      },
+    };
+  } else {
+    const userRef = doc(db, "users", AuthUser.id);
+    const userSnapshot = await getDoc(userRef);
+    serverUsername = userSnapshot.data()!.username;
+    if (serverUsername === null || serverUsername === undefined) {
+      return {
+        redirect: {
+          destination: "/login",
+        },
+      };
+    }
+  }
+
   return {
     props: {
       gameDataJSON,
       gameId,
+      serverUsername,
     },
   };
-};
+});
 
-export default Chessgame;
+export default withAuthUser<Props>({})(Chessgame);

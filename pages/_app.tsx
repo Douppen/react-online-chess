@@ -10,6 +10,10 @@ import Footer from "../components/Footer";
 import { Loader, MantineProvider } from "@mantine/core";
 import { Toaster } from "react-hot-toast";
 
+import initAuth from "../lib/nextFirebaseAuth";
+
+initAuth();
+
 type ExtendedAppProps = AppProps & {
   Component: {
     pageName?: string;
@@ -17,12 +21,12 @@ type ExtendedAppProps = AppProps & {
 };
 
 function MyApp({ Component, pageProps }: ExtendedAppProps) {
-  const { user, username, authLoading } = useUserData();
+  const { user, username } = useUserData();
 
   return (
     <>
       <Head>
-        <title>Onlinechesss</title>
+        <title>Choppychess | Play Chess Online</title>
         <meta
           name="description"
           content="Play chess online and challenge your friends"
@@ -35,36 +39,28 @@ function MyApp({ Component, pageProps }: ExtendedAppProps) {
         <link rel="manifest" href="/site.webmanifest" />
       </Head>
 
-      <UserContext.Provider value={{ user, username, authLoading }}>
+      <UserContext.Provider value={{ user, username }}>
         <Toaster />
-        <Navbar />
-        <div className="max-w-6xl m-auto lg:px-12">
-          <main className="p-8 pb-32 sm:pb-16 mt-4">
-            {authLoading ? (
-              <div className="flex justify-center h-[70vh] items-center">
-                <Loader size={"xl"} variant="oval" color={"orange"} />
-              </div>
-            ) : (
-              <Suspense
-                fallback={
-                  <div className="flex justify-center h-[70vh] items-center">
-                    <Loader size={"xl"} variant="oval" color={"orange"} />
-                  </div>
-                }
-              >
-                <Component {...pageProps} />
-              </Suspense>
-            )}
+        <div className="min-h-screen relative">
+          <Navbar />
+          <main
+            className={`max-w-6xl mx-auto lg:px-12 ${
+              Component.pageName === "index" ? "pb-[400px]" : ""
+            } flex-1`}
+          >
+            <div className="p-8 pb-32 sm:pb-16 mt-4">
+              <Component {...pageProps} />
+            </div>
           </main>
+          {Component.pageName === "index" && (
+            <div className="hidden sm:inline-block absolute w-full bottom-0">
+              <Footer />
+            </div>
+          )}
           <nav className="hidden">
             <BottomNav />
           </nav>
         </div>
-        {Component.pageName === "index" && (
-          <div className="hidden sm:inline">
-            <Footer />
-          </div>
-        )}
       </UserContext.Provider>
     </>
   );

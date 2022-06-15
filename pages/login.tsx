@@ -27,6 +27,7 @@ import { useContext } from "react";
 import { UserContext } from "../lib/context";
 import { getRefinedFirebaseAuthErrorMessage } from "../lib/helpers";
 import CustomTextInput from "../components/CustomTextInput";
+import ChooseUsername from "../components/ChooseUsername";
 
 export default function LoginForm() {
   const [type, toggle] = useToggle("Login", ["Login", "Register"]);
@@ -110,18 +111,24 @@ export default function LoginForm() {
         }}
       />
       {user ? (
-        <div className="flex justify-center">
-          <button
-            className="orangebutton text-2xl px-4"
-            onClick={async () => {
-              setLoading(true);
-              await signOut(auth);
-              setLoading(false);
-            }}
-          >
-            Sign out
-          </button>
-        </div>
+        username ? (
+          <div className="flex justify-center">
+            <button
+              className="orangebutton text-2xl px-4"
+              onClick={async () => {
+                setLoading(true);
+                await signOut(auth);
+                setLoading(false);
+              }}
+            >
+              Sign out
+            </button>
+          </div>
+        ) : (
+          <div>
+            <ChooseUsername />
+          </div>
+        )
       ) : (
         <div>
           <div className="flex mt-4 w-full select-none cursor-pointer rounded-3xl text-contrast bg-darklight transition-all p-1 justify-center mx-auto hover:ring-1 ring-darksquare">
@@ -199,7 +206,7 @@ export default function LoginForm() {
                   </p>
                 )}
               </Anchor>
-              <button className="orangebutton px-6">Log in</button>
+              <button className="orangebutton px-6">{type}</button>
             </div>
           </form>
         </div>

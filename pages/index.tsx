@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChess } from "@fortawesome/free-solid-svg-icons";
 import { Icon } from "@iconify/react";
 import Link from "next/link";
-import { NextPage } from "next";
+import { GetServerSidePropsContext, NextPage } from "next";
 import CreateGameModal from "../components/CreateGameModal";
 
 import { useRouter } from "next/router";
@@ -12,6 +12,16 @@ import { gamesCollection, makeRandomId } from "../lib/helpers";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { GameModalProps } from "../types/types";
+
+import nookies from "nookies";
+import { getFirebaseAdmin } from "next-firebase-auth";
+
+import {
+  useAuthUser,
+  withAuthUser,
+  withAuthUserTokenSSR,
+  AuthAction,
+} from "next-firebase-auth";
 
 type ExtendedNextPage = NextPage & {
   pageName: string;
@@ -84,6 +94,7 @@ const Home: ExtendedNextPage = () => {
       <main>
         <h1 className="mb-6 page-header">Play</h1>
         <p className="mb-4 text-xl font-medium">Quick pairing</p>
+
         <div className="flex mb-10 space-x-2 overflow-x-auto hide-scroll">
           <SquareButton
             onClick={() => {}}
@@ -179,7 +190,15 @@ const Home: ExtendedNextPage = () => {
 };
 
 Home.pageName = "index";
-export default Home;
+export default withAuthUser<ExtendedNextPage>()(Home);
+
+export const getServerSideProps = withAuthUserTokenSSR({})(
+  async ({ AuthUser }) => {
+    return {
+      props: {},
+    };
+  }
+);
 
 function SquareButton({
   smallText,

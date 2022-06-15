@@ -43,3 +43,10 @@ storage*
 # Firebase Hosting
 .firebaserc
 firebase-debug.log
+
+# UI debug
+ui-debug.log
+
+# Other
+next-env.d.ts
+next.config.js
