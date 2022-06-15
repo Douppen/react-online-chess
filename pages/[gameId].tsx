@@ -23,7 +23,14 @@ import { db } from "../lib/firebase";
 import { gamesCollection, posFromSquare, squareFromPos } from "../lib/helpers";
 import { ChessgameProps, Vector } from "../types/types";
 
-import { withAuthUserSSR, AuthAction } from "next-firebase-auth";
+import {
+  withAuthUserSSR,
+  AuthAction,
+  withAuthUser,
+  AuthUser,
+  SSRPropGetter,
+} from "next-firebase-auth";
+import { Params } from "next/dist/server/router";
 
 interface Props {
   gameDataJSON: string;
@@ -435,6 +442,7 @@ const Chessgame: NextPage<Props> = ({
 
 export const getServerSideProps = withAuthUserSSR({
   whenUnauthed: AuthAction.REDIRECT_TO_LOGIN,
+  // @ts-ignore
 })(async ({ AuthUser, params }) => {
   let gameId = params?.gameId;
   if (typeof gameId === "object") gameId = gameId[0];
@@ -480,4 +488,4 @@ export const getServerSideProps = withAuthUserSSR({
   };
 });
 
-export default Chessgame;
+export default withAuthUser<Props>({})(Chessgame);
