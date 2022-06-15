@@ -18,7 +18,7 @@ const initAuth = () => {
         clientEmail:
           "firebase-adminsdk-vdkd6@online-chess-7035c.iam.gserviceaccount.com",
         // The private key must not be accessible on the client side.
-        privateKey: process.env.FIREBASE_PRIVATE_KEY,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY!,
       },
       databaseURL: "https://online-chess-7035c.firebaseio.com",
     },
