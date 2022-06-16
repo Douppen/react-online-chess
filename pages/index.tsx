@@ -14,7 +14,7 @@ import { db } from "../lib/firebase";
 import { ChessgameProps, GameModalProps } from "../types/types";
 
 import nookies from "nookies";
-import { getFirebaseAdmin } from "next-firebase-auth";
+import { getFirebaseAdmin, withAuthUserSSR } from "next-firebase-auth";
 
 import {
   useAuthUser,
@@ -28,8 +28,15 @@ type ExtendedNextPage = NextPage & {
   pageName: string;
 };
 
-const Home: ExtendedNextPage = () => {
-  const { user, username } = useContext(UserContext);
+// @ts-ignore
+const Home: ExtendedNextPage = ({
+  serverUsername,
+}: {
+  serverUsername: string;
+}) => {
+  const username = serverUsername;
+  const user = useAuthUser();
+
   const [modal, setModal] = useState<GameModalProps>({
     isOpen: false,
     time: 1,
@@ -226,15 +233,40 @@ const Home: ExtendedNextPage = () => {
 };
 
 Home.pageName = "index";
+
+// @ts-ignore
 export default withAuthUser<ExtendedNextPage>()(Home);
 
-export const getServerSideProps = withAuthUserTokenSSR({})(
-  async ({ AuthUser }) => {
+// @ts-ignore
+export const getServerSideProps = withAuthUserSSR({})(async ({ AuthUser }) => {
+  let serverUsername: string;
+
+  if (AuthUser.id === null) {
     return {
-      props: {},
+      props: {
+        user: null,
+        serverUsername: null,
+      },
     };
+  } else {
+    const userRef = doc(db, "users", AuthUser.id);
+    const userSnapshot = await getDoc(userRef);
+    serverUsername = userSnapshot.data()!.username;
+    if (serverUsername === null || serverUsername === undefined) {
+      return {
+        redirect: {
+          destination: "/login",
+        },
+      };
+    }
   }
-);
+
+  return {
+    props: {
+      serverUsername,
+    },
+  };
+});
 
 function SquareButton({
   smallText,
