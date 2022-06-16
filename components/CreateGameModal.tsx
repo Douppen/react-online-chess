@@ -6,6 +6,9 @@ import {
   Slider,
   SliderProps,
 } from "@mantine/core";
+import { useContext } from "react";
+import { UserContext } from "../lib/context";
+import { InitiateGameProps } from "../pages";
 import { GameModalProps } from "../types/types";
 import CustomTextInput from "./CustomTextInput";
 

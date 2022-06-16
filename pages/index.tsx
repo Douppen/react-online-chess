@@ -6,7 +6,7 @@ import { GetServerSidePropsContext, NextPage } from "next";
 import CreateGameModal from "../components/CreateGameModal";
 
 import { useRouter } from "next/router";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../lib/context";
 import { gamesCollection, makeRandomId } from "../lib/helpers";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
@@ -16,13 +16,9 @@ import { ChessgameProps, GameModalProps } from "../types/types";
 import nookies from "nookies";
 import { getFirebaseAdmin, withAuthUserSSR } from "next-firebase-auth";
 
-import {
-  useAuthUser,
-  withAuthUser,
-  withAuthUserTokenSSR,
-  AuthAction,
-} from "next-firebase-auth";
+import { useAuthUser, withAuthUser } from "next-firebase-auth";
 import toast from "react-hot-toast";
+import { Loader, LoadingOverlay } from "@mantine/core";
 
 type ExtendedNextPage = NextPage & {
   pageName: string;
@@ -46,74 +42,6 @@ const Home: ExtendedNextPage = ({
   });
   const router = useRouter();
 
-  const initiateGame = async () => {
-    let { color, time, increment } = modal;
-
-    let gameType: ChessgameProps["gameType"];
-    if (time <= 2) gameType = "bullet";
-    else if (time <= 5) gameType = "blitz";
-    else if (time <= 10) gameType = "rapid";
-    else gameType = "normal";
-
-    if (color === "random") {
-      color = Math.random() > 0.5 ? "w" : "b";
-    }
-
-    let gameId = makeRandomId(4);
-    let gameRef = doc(gamesCollection, gameId);
-
-    // Create a new game document in Firestore
-    let gameDoc = await getDoc(gameRef);
-    while (gameDoc.exists()) {
-      gameId = makeRandomId(4);
-      gameRef = doc(gamesCollection, gameId);
-      gameDoc = await getDoc(gameRef);
-    }
-
-    let playersObject: ChessgameProps["players"];
-    if (color === "w") {
-      playersObject = {
-        w: {
-          username: username!,
-          country: "finland",
-          title: "none",
-          elo: 1500,
-          profileImage: "imageAddress",
-        },
-        b: null,
-      };
-    } else {
-      playersObject = {
-        b: {
-          username: username!,
-          country: "finland",
-          title: "none",
-          elo: 1500,
-          profileImage: "imageAddress",
-        },
-        w: null,
-      };
-    }
-
-    setDoc(gameRef, {
-      initialTime: time,
-      increment: increment,
-      gameType,
-      ongoing: true,
-      started: false,
-      pgn: "",
-      players: playersObject,
-      gameCreator: username!,
-      result: null,
-      creationTimestamp: serverTimestamp(),
-      startTimestamp: null,
-      endTimestamp: null,
-      timeTracker: null,
-    }).then(() => {
-      router.push(`${gameId}`);
-    });
-  };
-
   function changeModal(value: Partial<GameModalProps>) {
     setModal((prevModal) => ({ ...prevModal, ...value }));
   }
@@ -121,7 +49,14 @@ const Home: ExtendedNextPage = ({
   return (
     <>
       <CreateGameModal
-        initiateGame={initiateGame}
+        initiateGame={() =>
+          initiateGame({
+            color: modal.color,
+            increment: modal.increment,
+            time: modal.time,
+            username: username!,
+          }).then((gameId) => router.push(gameId))
+        }
         setModal={changeModal}
         modal={modal}
         onClose={() => setModal({ ...modal, isOpen: false })}
@@ -133,7 +68,14 @@ const Home: ExtendedNextPage = ({
 
         <div className="flex mb-10 space-x-2 overflow-x-auto hide-scroll">
           <SquareButton
-            onClick={() => {}}
+            onClick={() => {
+              initiateGame({
+                color: "random",
+                increment: 0,
+                time: 1,
+                username,
+              }).then((gameId) => router.push(gameId));
+            }}
             bigText="1 min"
             smallText="Bullet"
             icon={<BulletIcon />}
@@ -169,7 +111,7 @@ const Home: ExtendedNextPage = ({
             icon={<RabbitIcon />}
           />
           <SquareButton
-            onClick={() => {}}
+            onClick={() => setModal({ ...modal, isOpen: true })}
             bigText="More"
             smallText="Custom"
             icon={<EllipsisIcon />}
@@ -281,12 +223,21 @@ function SquareButton({
   onClick: () => void;
 }) {
   const { username } = useContext(UserContext);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setLoading(false);
+    }, 2500);
+    return () => clearTimeout(id);
+  }, [loading]);
 
   return (
     <button
       id="parent-button"
       onClick={() => {
         if (username !== null && username !== undefined) {
+          setLoading(true);
           onClick();
         } else {
           toast.error("You must be logged in to play");
@@ -296,12 +247,22 @@ function SquareButton({
       {...rest}
       disabled={username === null || username === undefined}
     >
-      <div className="transition-all duration-150">{icon}</div>
-      <div className="flex flex-col items-center justify-center">
-        <p className="text-md font-semibold text-contrast group-disabled:text-gray-400">
-          {bigText}
-        </p>
-        <p className="text-xs text-description">{smallText}</p>
+      <div className={`transition-all ${!loading && "hidden"}`}>
+        <Loader color={"orange"} variant="dots" />
+      </div>
+
+      <div
+        className={`transition-all ${
+          loading ? "hidden" : "flex flex-col items-center justify-center"
+        }`}
+      >
+        <div className="transition-all duration-150">{icon}</div>
+        <div className="flex flex-col items-center justify-center">
+          <p className="text-md font-semibold text-contrast group-disabled:text-gray-400">
+            {bigText}
+          </p>
+          <p className="text-xs text-description">{smallText}</p>
+        </div>
       </div>
     </button>
   );
@@ -442,3 +403,87 @@ function PeopleIcon() {
     </svg>
   );
 }
+
+export type InitiateGameProps = (props: {
+  color: "b" | "w" | "random";
+  time: number;
+  increment: number;
+  username: string;
+}) => Promise<string>;
+
+const initiateGame: InitiateGameProps = async ({
+  color,
+  time,
+  increment,
+  username,
+}) => {
+  console.log(color, time, increment, username);
+
+  let gameType: ChessgameProps["gameType"];
+  if (time <= 2) gameType = "bullet";
+  else if (time <= 5) gameType = "blitz";
+  else if (time <= 10) gameType = "rapid";
+  else gameType = "normal";
+
+  if (color === "random") {
+    color = Math.random() > 0.5 ? "w" : "b";
+  }
+
+  let gameId = makeRandomId(4);
+  let gameRef = doc(gamesCollection, gameId);
+
+  // Create a new game document in Firestore
+  let gameDoc = await getDoc(gameRef);
+  while (gameDoc.exists()) {
+    gameId = makeRandomId(4);
+    gameRef = doc(gamesCollection, gameId);
+    gameDoc = await getDoc(gameRef);
+  }
+
+  let playersObject: ChessgameProps["players"];
+  if (color === "w") {
+    playersObject = {
+      w: {
+        username: username!,
+        country: "finland",
+        title: "none",
+        elo: 1500,
+        profileImage: "imageAddress",
+      },
+      b: null,
+    };
+  } else {
+    playersObject = {
+      b: {
+        username: username!,
+        country: "finland",
+        title: "none",
+        elo: 1500,
+        profileImage: "imageAddress",
+      },
+      w: null,
+    };
+  }
+
+  let promise = new Promise<string>((res) => {
+    setDoc(gameRef, {
+      initialTime: time,
+      increment: increment,
+      gameType,
+      ongoing: true,
+      started: false,
+      pgn: "",
+      players: playersObject,
+      gameCreator: username!,
+      result: null,
+      creationTimestamp: serverTimestamp(),
+      startTimestamp: null,
+      endTimestamp: null,
+      timeTracker: null,
+    }).finally(() => {
+      res(gameId);
+    });
+  });
+
+  return promise;
+};

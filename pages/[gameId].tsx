@@ -48,8 +48,6 @@ const Chessgame: NextPage<Props> = ({
 
   if (serverUsername !== null) username = serverUsername;
 
-  console.log("Rendered");
-
   // Sounds
   const [moveSound] = useSound("/sounds/Move.mp3");
   const [captureSound] = useSound("/sounds/Capture.mp3");

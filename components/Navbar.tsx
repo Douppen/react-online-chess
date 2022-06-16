@@ -19,7 +19,7 @@ export default function Navbar() {
 
   return (
     <>
-      <div className="w-screen flex justify-between h-14 mt-4 text-contrast lg:max-w-7xl m-auto">
+      <div className="w-screen flex justify-between h-14 pt-6 text-contrast lg:max-w-7xl m-auto">
         <div className="flex w-full items-center ml-10 mr-6 justify-between">
           <div className="flex items-center">
             <div className="flex items-center space-x-1 select-none cursor-pointer">
