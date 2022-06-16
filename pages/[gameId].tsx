@@ -58,12 +58,12 @@ const Chessgame: NextPage<Props> = ({
   const [errorSound] = useSound("/sounds/Error.mp3");
 
   const router = useRouter();
-  const [player, setPlayer] = useState<"w" | "b">(() => {
+  const [playerColor, setPlayerColor] = useState<"w" | "b">(() => {
     if (gameData.players.w === username) return "w";
     else if (gameData.players.b === username) return "b";
     else return "w";
   });
-  const [usernames, setUsernames] = useState({
+  const [players, setPlayers] = useState({
     w: gameData.players.w,
     b: gameData.players.b,
   });
@@ -124,13 +124,10 @@ const Chessgame: NextPage<Props> = ({
       const players = doc.data()!.players;
       if (players.w !== null && players.b !== null) {
         // Find what color the current user should be and set the player state to that color.
-        if (players.w === username) {
-          setPlayer("w");
-          setUsernames({ w: players.w, b: players.b });
-        } else if (players.b === username) {
-          setPlayer("b");
-          setUsernames({ w: players.w, b: players.b });
-        } else {
+        if (
+          players.w.username !== username &&
+          players.b.username !== username
+        ) {
           // User is not one of the ones who created the game
           // ! Redirect to the home page. Maybe should enter spectator mode?
           toast.error("You are not one of the players in this game.");
@@ -140,20 +137,43 @@ const Chessgame: NextPage<Props> = ({
         // One of the players has not arrived yet
         if (players.w === null) {
           // Black initiated game
-          if (username !== players.b) {
+          if (username !== players.b?.username) {
             // User is not the one who initiated the game and the game can start with user being white
-            updateDoc(gameRef, { started: true, "players.w": username });
-            setPlayer("w");
-            setUsernames({ w: username!, b: players.b });
+            // TODO Here we should fetch from users profile their elo, country, title, etc...
+            const playerObject: ChessgameProps["players"]["w"] = {
+              username: username!,
+              title: "gm",
+              country: "FIN",
+              elo: 2480,
+              profileImage: "default",
+            };
+
+            updateDoc(gameRef, {
+              started: true,
+              "players.w": playerObject,
+            });
+            setPlayerColor("w");
+            setPlayers({ w: playerObject, b: players.b });
             initiateTimeTracker();
           }
         } else if (players.b === null) {
           // White initiated game
-          if (username !== players.w) {
+          if (username !== players.w?.username) {
             // User is not the one who initiated the game and the game can start with user being black
-            updateDoc(gameRef, { started: true, "players.b": username });
-            setPlayer("b");
-            setUsernames({ b: username!, w: players.w });
+            const playerObject: ChessgameProps["players"]["b"] = {
+              username: username!,
+              title: "im",
+              country: "USA",
+              elo: 2180,
+              profileImage: "default",
+            };
+
+            updateDoc(gameRef, {
+              started: true,
+              "players.b": playerObject,
+            });
+            setPlayerColor("b");
+            setPlayers({ b: playerObject, w: players.w });
             initiateTimeTracker();
           }
         }
@@ -177,7 +197,7 @@ const Chessgame: NextPage<Props> = ({
       }
       if (
         clickedPiece.color === chess.turn() &&
-        clickedPiece.color === player
+        clickedPiece.color === playerColor
       ) {
         // Clicked piece is of color of the player who's turn it is and of the color of the authenticated player's pieces
         const validMoves = chess.moves({
@@ -401,23 +421,23 @@ const Chessgame: NextPage<Props> = ({
           onClose={() => {}}
           opened={true}
           result={result}
-          usernames={usernames}
+          usernames={{ b: players.b!.username, w: players.w!.username }}
           username={username}
         />
       )}
       <main
         className={`flex origin-top scale-[40%] 320:scale-[52%] 360:scale-[60%] 440:scale-[70%] 500:scale-[80%] 600:scale-[100%] items-center mt-3 ${
-          player === "b" ? "flex-col-reverse" : "flex-col"
+          playerColor === "b" ? "flex-col-reverse" : "flex-col"
         }`}
       >
         <Board
           gameInstance={chess}
           onClickHandler={onClickHandler}
           clickedSquare={firstClick}
-          player={player}
+          player={playerColor}
         />
         <Panel
-          usernames={usernames}
+          players={players}
           timeRemaining={{ w: whiteRemainingMillis, b: blackRemainingMillis }}
         />
       </main>
@@ -426,7 +446,7 @@ const Chessgame: NextPage<Props> = ({
           <button
             onClick={() => {
               handleGameEnd({
-                winner: player === "w" ? "b" : "w",
+                winner: playerColor === "w" ? "b" : "w",
                 cause: "resign",
               });
             }}

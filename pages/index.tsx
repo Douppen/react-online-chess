@@ -11,7 +11,7 @@ import { UserContext } from "../lib/context";
 import { gamesCollection, makeRandomId } from "../lib/helpers";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
-import { GameModalProps } from "../types/types";
+import { ChessgameProps, GameModalProps } from "../types/types";
 
 import nookies from "nookies";
 import { getFirebaseAdmin } from "next-firebase-auth";
@@ -42,11 +42,16 @@ const Home: ExtendedNextPage = () => {
   const initiateGame = async () => {
     let { color, time, increment } = modal;
 
+    let gameType: ChessgameProps["gameType"];
+    if (time <= 2) gameType = "bullet";
+    else if (time <= 5) gameType = "blitz";
+    else if (time <= 10) gameType = "rapid";
+    else gameType = "normal";
+
     if (color === "random") {
       color = Math.random() > 0.5 ? "w" : "b";
     }
 
-    const opponentColor = color === "w" ? "b" : "w";
     let gameId = makeRandomId(4);
     let gameRef = doc(gamesCollection, gameId);
 
@@ -57,17 +62,40 @@ const Home: ExtendedNextPage = () => {
       gameRef = doc(gamesCollection, gameId);
       gameDoc = await getDoc(gameRef);
     }
+
+    let playersObject: ChessgameProps["players"];
+    if (color === "w") {
+      playersObject = {
+        w: {
+          username: username!,
+          country: "finland",
+          title: "none",
+          elo: 1500,
+          profileImage: "imageAddress",
+        },
+        b: null,
+      };
+    } else {
+      playersObject = {
+        b: {
+          username: username!,
+          country: "finland",
+          title: "none",
+          elo: 1500,
+          profileImage: "imageAddress",
+        },
+        w: null,
+      };
+    }
+
     setDoc(gameRef, {
       initialTime: time,
       increment: increment,
+      gameType,
       ongoing: true,
       started: false,
       pgn: "",
-      //@ts-ignore
-      players: {
-        [color]: username,
-        [opponentColor]: null,
-      },
+      players: playersObject,
       gameCreator: username!,
       result: null,
       creationTimestamp: serverTimestamp(),

@@ -4,21 +4,30 @@ import { faChessKing as outlineKing } from "@fortawesome/free-regular-svg-icons"
 import { serverTimestamp } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { convertMillisToMinutesAndSeconds } from "../lib/helpers";
+import { ChessgameProps } from "../types/types";
 
 const Panel = ({
-  usernames,
+  players,
   timeRemaining,
 }: {
-  usernames: { w: string | null | undefined; b: string | null | undefined };
+  players: ChessgameProps["players"];
   timeRemaining: { b: number; w: number };
 }) => {
   return (
     <>
       <div className="order-1 text-description">
-        <Timer time={timeRemaining.b} username={usernames.b} player="b" />
+        <Timer
+          time={timeRemaining.b}
+          username={players.b?.username}
+          player="b"
+        />
       </div>
       <div className="order-3 text-description">
-        <Timer time={timeRemaining.w} username={usernames.w} player="w" />
+        <Timer
+          time={timeRemaining.w}
+          username={players.w?.username}
+          player="w"
+        />
       </div>
     </>
   );
