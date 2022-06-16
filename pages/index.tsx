@@ -168,23 +168,30 @@ const Home: ExtendedNextPage = () => {
             icon={<PeopleIcon />}
           />
         </div>
-        <p className="mt-8 mb-4 text-xl font-medium">Join game</p>
-        <div className="bg-dark text-sm sm:text-md flex flex-col justify-center rounded-lg py-4 px-6 border-[1px] border-slate-600">
-          <p>
-            Create an account or sign in to join custom games and private
-            challenges
-          </p>
-          <div className="flex items-center justify-between w-full pt-4 max-w-md">
-            <Link href="/login">
-              <button className="flex-1 orangebutton">Create account</button>
-            </Link>
-            <Link href="/login">
-              <button className="flex-1 font-medium hover:underline decoration-complementary underline-offset-[6px]">
-                Log in
-              </button>
-            </Link>
-          </div>
-        </div>
+        {username === undefined ||
+          (username === null && (
+            <div>
+              <p className="mt-8 mb-4 text-xl font-medium">Log in to play</p>
+              <div className="bg-dark text-sm sm:text-md flex flex-col justify-center rounded-lg py-4 px-6 border-[1px] border-slate-600">
+                <p>
+                  Create an account or sign in to join custom games and
+                  challenges
+                </p>
+                <div className="flex items-center justify-between w-full pt-4 max-w-md">
+                  <Link href="/login">
+                    <button className="flex-1 orangebutton">
+                      Create account
+                    </button>
+                  </Link>
+                  <Link href="/login">
+                    <button className="flex-1 font-medium hover:underline decoration-complementary underline-offset-[6px]">
+                      Log in
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))}
       </main>
     </>
   );

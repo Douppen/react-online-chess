@@ -45,7 +45,7 @@ function MyApp({ Component, pageProps }: ExtendedAppProps) {
           <Navbar />
           <main
             className={`max-w-6xl mx-auto lg:px-12 ${
-              Component.pageName === "index" ? "pb-[400px]" : ""
+              Component.pageName === "index" ? "sm:pb-[400px]" : ""
             } flex-1`}
           >
             <div className="p-8 pb-32 sm:pb-16 mt-4">

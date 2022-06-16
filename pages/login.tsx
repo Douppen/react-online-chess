@@ -10,6 +10,7 @@ import {
   Anchor,
   LoadingOverlay,
   PasswordInputProps,
+  Loader,
 } from "@mantine/core";
 
 import { FcGoogle } from "react-icons/fc";
@@ -28,8 +29,9 @@ import { UserContext } from "../lib/context";
 import { getRefinedFirebaseAuthErrorMessage } from "../lib/helpers";
 import CustomTextInput from "../components/CustomTextInput";
 import ChooseUsername from "../components/ChooseUsername";
+import { AuthAction, withAuthUser } from "next-firebase-auth";
 
-export default function LoginForm() {
+function LoginPage() {
   const [type, toggle] = useToggle("Login", ["Login", "Register"]);
   const [loading, setLoading] = useState(false);
   const { user, username } = useContext(UserContext);
@@ -250,3 +252,7 @@ function CustomPasswordInput({ ...rest }: PasswordInputProps) {
     />
   );
 }
+
+export default withAuthUser({
+  whenUnauthedBeforeInit: AuthAction.SHOW_LOADER,
+})(LoginPage);
