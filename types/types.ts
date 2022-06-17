@@ -1,6 +1,25 @@
 import { PieceType, Square } from "chess.js";
 import { Timestamp } from "firebase/firestore";
 
+export interface UserDoc {
+  createdAt: Timestamp;
+  displayName: string | null;
+  email: string;
+  photoURL: string | null;
+  username: string;
+  location: {
+    country: string;
+    city: string;
+    countryCode: string;
+    continentCode: string;
+    timeZone: string;
+    /** Timezone UTC DST offset in seconds */
+    timeZoneOffset: number;
+    proxy: boolean;
+    ip: string;
+    updatedAt: Timestamp;
+  };
+}
 export interface ChessgameProps {
   /** Initial time in minutes */
   initialTime: number;
@@ -16,7 +35,7 @@ export interface ChessgameProps {
     {
       username: string;
       elo: number;
-      /** Three letter ALL CAPS iso country code */
+      /** Name of country */
       country: string;
       title: "gm" | "im" | "fm" | "cm" | "none";
       profileImage: string;
@@ -99,3 +118,20 @@ export type GameModalProps = {
   color: "w" | "b" | "random";
   friendUsername: string;
 };
+
+export type UserLocationRequest =
+  | {
+      status: "success";
+      continentCode: string;
+      country: string;
+      countryCode: string;
+      city: string;
+      timezone: string;
+      offset: number;
+      proxy: boolean;
+      query: string;
+    }
+  | {
+      status: "fail";
+      message: string;
+    };
