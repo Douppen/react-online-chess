@@ -5,8 +5,12 @@ export interface UserDoc {
   createdAt: Timestamp;
   displayName: string | null;
   email: string;
+  emailVerified: boolean;
   photoURL: string | null;
   username: string;
+  isPremium: boolean;
+  isOnline: boolean;
+  isModerator: boolean;
   location: {
     country: string;
     city: string;
@@ -19,6 +23,15 @@ export interface UserDoc {
     ip: string;
     updatedAt: Timestamp;
   };
+  elo: Record<
+    ChessgameProps["gameType"],
+    {
+      rating: number;
+      ratingDeviation: number;
+      ratingChange: number;
+      kValue: number;
+    }
+  >;
 }
 export interface ChessgameProps {
   /** Initial time in minutes */
