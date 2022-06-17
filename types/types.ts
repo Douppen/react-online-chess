@@ -32,6 +32,7 @@ export interface UserDoc {
       kValue: number;
     }
   >;
+  games: [];
 }
 export interface ChessgameProps {
   /** Initial time in minutes */
@@ -47,7 +48,10 @@ export interface ChessgameProps {
     "w" | "b",
     {
       username: string;
-      elo: number;
+      elo: {
+        initialRating: number;
+        change?: number;
+      };
       /** Name of country */
       country: string;
       title: "gm" | "im" | "fm" | "cm" | "none";

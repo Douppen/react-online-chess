@@ -26,7 +26,9 @@ function MyApp({ Component, pageProps }: ExtendedAppProps) {
   const { user, username } = useUserData();
 
   useEffect(() => {
-    setUserCountry(user);
+    if (user) {
+      setUserCountry(user);
+    }
   }, [user]);
 
   return (

@@ -142,7 +142,9 @@ const Chessgame: NextPage<Props> = ({
               username: username!,
               title: "gm",
               country: "FIN",
-              elo: 2480,
+              elo: {
+                initialRating: 2480,
+              },
               profileImage: "default",
             };
 
@@ -162,7 +164,9 @@ const Chessgame: NextPage<Props> = ({
               username: username!,
               title: "im",
               country: "USA",
-              elo: 2180,
+              elo: {
+                initialRating: 2180,
+              },
               profileImage: "default",
             };
 
@@ -487,6 +491,11 @@ export const getServerSideProps = withAuthUserSSR({
   } else {
     const userRef = doc(db, "users", AuthUser.id);
     const userSnapshot = await getDoc(userRef);
+
+    if (!userSnapshot.exists()) {
+      fetch("/api/logout");
+    }
+
     serverUsername = userSnapshot.data()!.username;
     if (serverUsername === null || serverUsername === undefined) {
       return {

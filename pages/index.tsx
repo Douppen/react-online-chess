@@ -193,6 +193,11 @@ export const getServerSideProps = withAuthUserSSR({})(async ({ AuthUser }) => {
   } else {
     const userRef = doc(db, "users", AuthUser.id);
     const userSnapshot = await getDoc(userRef);
+
+    if (!userSnapshot.exists()) {
+      fetch("/api/logout");
+    }
+
     serverUsername = userSnapshot.data()!.username;
     if (serverUsername === null || serverUsername === undefined) {
       return {
@@ -447,7 +452,9 @@ const initiateGame: InitiateGameProps = async ({
         username: username!,
         country: "finland",
         title: "none",
-        elo: 1500,
+        elo: {
+          initialRating: 1500,
+        },
         profileImage: "imageAddress",
       },
       b: null,
@@ -458,7 +465,9 @@ const initiateGame: InitiateGameProps = async ({
         username: username!,
         country: "finland",
         title: "none",
-        elo: 1500,
+        elo: {
+          initialRating: 1500,
+        },
         profileImage: "imageAddress",
       },
       w: null,
