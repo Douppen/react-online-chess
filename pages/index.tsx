@@ -249,7 +249,9 @@ function SquareButton({
         }
       }}
       className="flex shrink-0 flex-col group enabled:hover:border-indigo-500 transition-all duration-150 cursor-pointer items-center justify-center bg-dark border-[1px] border-slate-600 rounded-lg p-2 w-24 h-24 disabled:cursor-not-allowed child:text-complementary child:hover:text-indigo-500 child:disabled:text-slate-600 disabled:bg-dark/80"
-      {...rest}
+      title={`${bigText} ${
+        smallText !== "Custom" ? smallText.toLowerCase() + " game" : ""
+      }`}
       disabled={username === null || username === undefined}
     >
       <div className={`transition-all ${!loading && "hidden"}`}>
@@ -463,12 +465,12 @@ const initiateGame: InitiateGameProps = async ({
     playersObject = {
       b: {
         username: username!,
-        country: "finland",
+        country: "FI",
         title: "none",
         elo: {
           initialRating: 1500,
         },
-        profileImage: "imageAddress",
+        profileImage: "deault",
       },
       w: null,
     };

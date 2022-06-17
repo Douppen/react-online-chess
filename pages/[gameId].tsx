@@ -57,8 +57,8 @@ const Chessgame: NextPage<Props> = ({
 
   const router = useRouter();
   const [playerColor, setPlayerColor] = useState<"w" | "b">(() => {
-    if (gameData.players.w === username) return "w";
-    else if (gameData.players.b === username) return "b";
+    if (gameData.players.w?.username === username) return "w";
+    else if (gameData.players.b?.username === username) return "b";
     else return "w";
   });
   const [players, setPlayers] = useState({
@@ -141,7 +141,7 @@ const Chessgame: NextPage<Props> = ({
             const playerObject: ChessgameProps["players"]["w"] = {
               username: username!,
               title: "gm",
-              country: "FIN",
+              country: "FI",
               elo: {
                 initialRating: 2480,
               },
@@ -163,7 +163,7 @@ const Chessgame: NextPage<Props> = ({
             const playerObject: ChessgameProps["players"]["b"] = {
               username: username!,
               title: "im",
-              country: "USA",
+              country: "US",
               elo: {
                 initialRating: 2180,
               },

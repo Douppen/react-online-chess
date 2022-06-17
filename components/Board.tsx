@@ -29,7 +29,7 @@ function Board({
         clickedSquare={clickedSquare}
         player={player}
       />
-      <div className="game-size absolute top-0 pointer-events-none">
+      <div className="w-[600px] h-[600px] absolute top-0 pointer-events-none">
         {board.map((row) => {
           return row.map((data, col) => {
             if (data === null) return;

@@ -52,10 +52,10 @@ export interface ChessgameProps {
         initialRating: number;
         change?: number;
       };
-      /** Name of country */
+      /** 2-letter ISO country code */
       country: string;
       title: "gm" | "im" | "fm" | "cm" | "none";
-      profileImage: string;
+      profileImage: "default" | string;
     } | null
   >;
 

@@ -1,7 +1,4 @@
-import { Box } from "@mantine/core";
-import { Move, PieceType } from "chess.js";
-import { useEffect, useState } from "react";
-import { squareFromPos } from "../lib/helpers";
+import { Move } from "chess.js";
 import { ClickHandler, Vector } from "../types/types";
 
 const WHITE = "#f0c37f";
@@ -103,7 +100,7 @@ const Background = ({ onClickHandler, clickedSquare, player }: Props) => {
     <div
       className={`flex ${
         player === "w" ? "flex-col" : "flex-col-reverse"
-      } -z-10 game-size overflow-hidden rounded`}
+      } -z-10 h-[600px] w-[600px] overflow-hidden rounded`}
     >
       {new Array(8).fill(0).map((_, row) => {
         return (

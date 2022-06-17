@@ -13,6 +13,7 @@ import { Toaster } from "react-hot-toast";
 import initAuth from "../lib/nextFirebaseAuth";
 import { setUserCountry } from "../lib/helpers";
 import { UserDoc } from "../types/types";
+import { Chess } from "chess.js";
 
 initAuth();
 
