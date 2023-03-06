@@ -6,6 +6,9 @@ import {
   Slider,
   SliderProps,
 } from "@mantine/core";
+import { useContext } from "react";
+import { UserContext } from "../lib/context";
+import { InitiateGameProps } from "../pages";
 import { GameModalProps } from "../types/types";
 import CustomTextInput from "./CustomTextInput";
 
@@ -116,7 +119,7 @@ const CreateGameModal = ({
               onChange={(e) => setModal({ increment: e.valueOf() })}
             />
           </div>
-          <CustomTextInput placeholder="Friend's username" />
+          <CustomTextInput placeholder="Friend's username (not required)" />
           <div className="mt-6">
             <h4 className="font-medium mb-4">Color</h4>
             <div className="flex items-center space-x-8 select-none">

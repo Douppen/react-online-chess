@@ -2,7 +2,7 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import Navbar from "../components/Navbar";
 import { UserContext } from "../lib/context";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useUserData } from "../lib/hooks";
 import Head from "next/head";
 import BottomNav from "../components/BottomNav";
@@ -11,6 +11,9 @@ import { Loader, MantineProvider } from "@mantine/core";
 import { Toaster } from "react-hot-toast";
 
 import initAuth from "../lib/nextFirebaseAuth";
+import { setUserCountry } from "../lib/helpers";
+import { UserDoc } from "../types/types";
+import { Chess } from "chess.js";
 
 initAuth();
 
@@ -22,6 +25,12 @@ type ExtendedAppProps = AppProps & {
 
 function MyApp({ Component, pageProps }: ExtendedAppProps) {
   const { user, username } = useUserData();
+
+  useEffect(() => {
+    if (user) {
+      setUserCountry(user);
+    }
+  }, [user]);
 
   return (
     <>
@@ -45,7 +54,7 @@ function MyApp({ Component, pageProps }: ExtendedAppProps) {
           <Navbar />
           <main
             className={`max-w-6xl mx-auto lg:px-12 ${
-              Component.pageName === "index" ? "pb-[400px]" : ""
+              Component.pageName === "index" ? "sm:pb-[400px]" : ""
             } flex-1`}
           >
             <div className="p-8 pb-32 sm:pb-16 mt-4">

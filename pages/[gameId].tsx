@@ -1,4 +1,4 @@
-import { Chess, Move } from "chess.js";
+import { Chess, ChessInstance, Move } from "chess.js";
 import {
   doc,
   getDoc,
@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 import { NextPage, GetServerSideProps } from "next";
 import { useRouter } from "next/router";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import useSound from "use-sound";
 import Board from "../components/Board";
@@ -21,7 +21,7 @@ import SharePage from "../components/Sharepage";
 import { UserContext } from "../lib/context";
 import { db } from "../lib/firebase";
 import { gamesCollection, posFromSquare, squareFromPos } from "../lib/helpers";
-import { ChessgameProps, Vector } from "../types/types";
+import { ChessgameProps, MoveHandler, Vector } from "../types/types";
 
 import {
   withAuthUserSSR,
@@ -48,8 +48,6 @@ const Chessgame: NextPage<Props> = ({
 
   if (serverUsername !== null) username = serverUsername;
 
-  console.log("Rendered");
-
   // Sounds
   const [moveSound] = useSound("/sounds/Move.mp3");
   const [captureSound] = useSound("/sounds/Capture.mp3");
@@ -58,12 +56,12 @@ const Chessgame: NextPage<Props> = ({
   const [errorSound] = useSound("/sounds/Error.mp3");
 
   const router = useRouter();
-  const [player, setPlayer] = useState<"w" | "b">(() => {
-    if (gameData.players.w === username) return "w";
-    else if (gameData.players.b === username) return "b";
+  const [playerColor, setPlayerColor] = useState<"w" | "b">(() => {
+    if (gameData.players.w?.username === username) return "w";
+    else if (gameData.players.b?.username === username) return "b";
     else return "w";
   });
-  const [usernames, setUsernames] = useState({
+  const [players, setPlayers] = useState({
     w: gameData.players.w,
     b: gameData.players.b,
   });
@@ -121,39 +119,74 @@ const Chessgame: NextPage<Props> = ({
 
     const gameRef = doc(gamesCollection, gameId);
     getDoc(gameRef).then((doc) => {
-      const players = doc.data()!.players;
-      if (players.w !== null && players.b !== null) {
+      const dbPlayers = doc.data()!.players;
+      const data = doc.data()!;
+      if (dbPlayers.w !== null && dbPlayers.b !== null) {
         // Find what color the current user should be and set the player state to that color.
-        if (players.w === username) {
-          setPlayer("w");
-          setUsernames({ w: players.w, b: players.b });
-        } else if (players.b === username) {
-          setPlayer("b");
-          setUsernames({ w: players.w, b: players.b });
-        } else {
+        // Initiate time if game has not started
+        if (
+          !data.started &&
+          data.players.w !== null &&
+          data.players.b !== null
+        ) {
+          initiateTimeTracker();
+          updateDoc(gameRef, { started: true });
+        }
+
+        if (
+          dbPlayers.w.username !== username &&
+          dbPlayers.b.username !== username
+        ) {
           // User is not one of the ones who created the game
-          // ! Redirect to the home page. Maybe should enter spectator mode?
+          // TODO Redirect to the home page. Maybe should enter spectator mode?
           toast.error("You are not one of the players in this game.");
           router.push("/");
         }
       } else {
         // One of the players has not arrived yet
-        if (players.w === null) {
+        if (dbPlayers.w === null) {
           // Black initiated game
-          if (username !== players.b) {
+          if (username !== dbPlayers.b?.username) {
             // User is not the one who initiated the game and the game can start with user being white
-            updateDoc(gameRef, { started: true, "players.w": username });
-            setPlayer("w");
-            setUsernames({ w: username!, b: players.b });
+            // TODO Here we should fetch from users profile their elo, country, title, etc...
+            const playerObject: ChessgameProps["players"]["w"] = {
+              username: username!,
+              title: "gm",
+              country: "FI",
+              elo: {
+                initialRating: 2480,
+              },
+              profileImage: "default",
+            };
+
+            updateDoc(gameRef, {
+              started: true,
+              "players.w": playerObject,
+            });
+            setPlayerColor("w");
+            setPlayers({ w: playerObject, b: dbPlayers.b });
             initiateTimeTracker();
           }
-        } else if (players.b === null) {
+        } else if (dbPlayers.b === null) {
           // White initiated game
-          if (username !== players.w) {
+          if (username !== dbPlayers.w?.username) {
             // User is not the one who initiated the game and the game can start with user being black
-            updateDoc(gameRef, { started: true, "players.b": username });
-            setPlayer("b");
-            setUsernames({ b: username!, w: players.w });
+            const playerObject: ChessgameProps["players"]["b"] = {
+              username: username!,
+              title: "im",
+              country: "US",
+              elo: {
+                initialRating: 2180,
+              },
+              profileImage: "default",
+            };
+
+            updateDoc(gameRef, {
+              started: true,
+              "players.b": playerObject,
+            });
+            setPlayerColor("b");
+            setPlayers({ b: playerObject, w: dbPlayers.w });
             initiateTimeTracker();
           }
         }
@@ -167,81 +200,107 @@ const Chessgame: NextPage<Props> = ({
     validMoves: Move[];
   } | null>(null);
 
-  const onClickHandler = ({ x, y }: Vector) => {
+  const [preMove, setPreMove] = useState<{
+    pos: Vector;
+  } | null>(null);
+
+  const handleClick = (pos: Vector) => {
     if (result !== null) return;
-    const clickedPiece = chess.get(squareFromPos({ x, y }));
+    // If there is no first click, set first click. Otherwise, call handleChessMove with from and to position.
+    // Set valid moves state
+    const clickedSquare = chess.get(squareFromPos(pos));
 
     if (firstClick === null) {
-      if (clickedPiece === null) {
+      if (clickedSquare === null) {
         return;
       }
       if (
-        clickedPiece.color === chess.turn() &&
-        clickedPiece.color === player
+        // clickedSquare.color === chess.turn() &&
+        clickedSquare.color === playerColor
       ) {
         // Clicked piece is of color of the player who's turn it is and of the color of the authenticated player's pieces
         const validMoves = chess.moves({
-          square: squareFromPos({ x, y }),
+          square: squareFromPos(pos),
           verbose: true,
         });
-        if (validMoves.length !== 0) {
-          setFirstClick({ pos: { x, y }, validMoves });
-        }
+        setFirstClick({ pos, validMoves });
       }
     } else {
-      if (clickedPiece === null || clickedPiece.color !== chess.turn()) {
-        // Check if the click is on square that can be moved to
-        const validMoves = firstClick.validMoves;
-        const isValidMove = validMoves.some((object) => {
-          const vector = posFromSquare(object.to);
-          return vector.x === x && vector.y === y;
-        });
-        if (isValidMove) {
-          let move: Move;
-          if (
-            (chess.turn() === "w" && y === 0) ||
-            (chess.turn() === "b" && y === 7)
-          ) {
-            move = chess.move({
-              from: squareFromPos(firstClick.pos),
-              to: squareFromPos({ x, y }),
-              promotion: "q",
-            }) as Move;
-          } else {
-            move = chess.move({
-              from: squareFromPos(firstClick.pos),
-              to: squareFromPos({ x, y }),
-            }) as Move;
-          }
-          if (chess.in_checkmate()) {
-            checkmateSound();
-            handleGameEnd({ winner: move!.color, cause: "checkmate" });
-          } else if (chess.in_draw()) {
-            handleGameEnd({ winner: "draw", cause: "draw" });
-          } else if (chess.in_check()) checkSound();
-          else if (move?.flags === "c") captureSound();
-          else moveSound();
-          setFirstClick(null);
-
-          // ! Here was a call to handle time update
-        }
-      } else if (clickedPiece.color === chess.turn()) {
-        // Clicked piece is of correct color
+      // There is previously clicked piece
+      if (
+        // clickedSquare?.color === chess.turn() &&
+        clickedSquare?.color === playerColor
+      ) {
+        // Clicked piece is another piece of the same color as the previous clicked piece
         const validMoves = chess.moves({
-          square: squareFromPos({ x, y }),
+          square: squareFromPos(pos),
           verbose: true,
         });
-        if (validMoves.length !== 0) {
-          setFirstClick({ pos: { x, y }, validMoves });
-        }
+        setFirstClick({ pos, validMoves });
+      } else {
+        // Move might not be valid. This is handled in the handleChessMove function.
+        setFirstClick(null);
+        handleChessMove({ from: firstClick.pos, to: pos });
       }
     }
   };
 
+  const handleChessMove: MoveHandler = async ({ from, to }) => {
+    if (result !== null) return;
+
+    const fromSquare = squareFromPos(from);
+    const toSquare = squareFromPos(to);
+
+    // TODO deal with premoves
+
+    let promotion: "q" | "r" | "b" | "n" | undefined;
+    if (
+      (chess.turn() === "w" && to.y === 0) ||
+      (chess.turn() === "b" && to.y === 7)
+    ) {
+      promotion = await getPromotion();
+    }
+
+    setChess((chess) => {
+      const move = chess.move({ from: fromSquare, to: toSquare, promotion });
+
+      const currentPgn = chess.pgn();
+      const gameRef = doc(gamesCollection, gameId);
+      updateDoc(gameRef, { pgn: currentPgn });
+
+      // Return chess instance but don't execute code below this line if move is not valid...
+      if (move === null) return chess;
+
+      if (chess.in_checkmate()) {
+        checkmateSound();
+        handleGameEnd({ winner: move.color, cause: "checkmate" });
+      } else if (chess.in_draw()) {
+        handleGameEnd({ winner: "draw", cause: "draw" });
+      } else if (chess.in_check()) checkSound();
+      else if (move.flags === "c") captureSound();
+      else moveSound();
+
+      return chess;
+    });
+
+    setFirstClick(null);
+    handleTimeUpdate(playerColor);
+  };
+
+  function getPromotion() {
+    // Prompt the user to select which piece to promote to.
+    return new Promise<"q" | "r" | "b" | "n">((resolve) => {
+      const options = ["q", "r", "b", "n"] as const;
+      const select = prompt("choose an option");
+      resolve(options[0]);
+    });
+  }
+
   // TODO fix so that refreshing makes the time correct locally
   // Handling client-side time countdown and checking for time running out
   useEffect(() => {
-    if (!gameHasStarted || result !== null) return;
+    if (!gameHasStarted || result !== null)
+      return () => clearInterval(intervalId);
     let intervalId = setInterval(() => {
       if (chess.turn() === "w") {
         setWhiteRemainingMillis((current) => {
@@ -273,25 +332,17 @@ const Chessgame: NextPage<Props> = ({
         setGameHasStarted(true);
         setResult(data!.result);
 
+        // Updating chess position from database
         const chess = new Chess();
         chess.load_pgn(data.pgn);
         setChess(chess);
+
+        // Updating players from database
+        setPlayers({ b: data.players.b, w: data.players.w });
       }
     });
     return unsubscribe;
   }, [username]);
-
-  // Whenever the board changes, we should write the pgn to the database
-  useEffect(() => {
-    if (!gameHasStarted) return;
-    const gameRef = doc(gamesCollection, gameId);
-    updateDoc(gameRef, { pgn: chess.pgn() });
-
-    let whoMoved: "w" | "b";
-    if (chess.turn() === "w") whoMoved = "b";
-    else whoMoved = "w";
-    handleTimeUpdate(whoMoved);
-  }, [chess.pgn()]);
 
   const handleTimeUpdate = async (whoMoved: "w" | "b") => {
     if (result !== null) return;
@@ -401,32 +452,33 @@ const Chessgame: NextPage<Props> = ({
           onClose={() => {}}
           opened={true}
           result={result}
-          usernames={usernames}
+          usernames={{ b: players.b?.username, w: players.w?.username }}
           username={username}
         />
       )}
       <main
-        className={`flex origin-top scale-[40%] 320:scale-[52%] 360:scale-[60%] 440:scale-[70%] 500:scale-[80%] 600:scale-[100%] items-center mt-3 ${
-          player === "b" ? "flex-col-reverse" : "flex-col"
+        className={`flex origin-top items-center mt-3 ${
+          playerColor === "b" ? "flex-col-reverse" : "flex-col"
         }`}
       >
         <Board
           gameInstance={chess}
-          onClickHandler={onClickHandler}
+          handleClick={handleClick}
+          handleMove={handleChessMove}
           clickedSquare={firstClick}
-          player={player}
+          player={playerColor}
         />
         <Panel
-          usernames={usernames}
+          players={players}
           timeRemaining={{ w: whiteRemainingMillis, b: blackRemainingMillis }}
         />
       </main>
-      <section className="flex justify-center items-center relative -top-[442px] 320:-top-[354px] 360:-top-[295px] 440:-top-[222px] 500:-top-[148px] 600:top-[0px]">
+      <section className="flex justify-center items-center relative">
         <div className="mt-4">
           <button
             onClick={() => {
               handleGameEnd({
-                winner: player === "w" ? "b" : "w",
+                winner: playerColor === "w" ? "b" : "w",
                 cause: "resign",
               });
             }}
@@ -469,6 +521,11 @@ export const getServerSideProps = withAuthUserSSR({
   } else {
     const userRef = doc(db, "users", AuthUser.id);
     const userSnapshot = await getDoc(userRef);
+
+    if (!userSnapshot.exists()) {
+      fetch("/api/logout");
+    }
+
     serverUsername = userSnapshot.data()!.username;
     if (serverUsername === null || serverUsername === undefined) {
       return {

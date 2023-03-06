@@ -1,28 +1,32 @@
 import { PieceType } from "chess.js";
-import { useEffect, useState } from "react";
+import { DetailedHTMLProps, ImgHTMLAttributes } from "react";
+import { ConnectDragSource, useDrag } from "react-dnd";
 
 type Props = {
   color: "w" | "b";
   type: PieceType;
-  pos: { x: number; y: number };
-  player: "w" | "b";
+  dragRef: ConnectDragSource | undefined;
+  isDraggable: "false" | "true";
 };
 
 // TODO! useState and useEffect should be used correctly below...
-const Piece = ({ color, type, pos, player }: Props) => {
-  const space = 75;
-
+const Piece = ({
+  color,
+  type,
+  dragRef,
+  isDraggable,
+  ...rest
+}: DetailedHTMLProps<ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement> &
+  Props) => {
   const src = `/pieces/${type}-${color}.svg`;
   return (
     <img
-      style={{
-        left: player === "w" ? pos.x * space : -pos.x * space + space * 7,
-        top: player === "w" ? -pos.y * space + space * 7 : pos.y * space,
-        width: space,
-      }}
-      className="absolute cursor-pointer"
+      {...rest}
+      ref={dragRef}
       src={src}
+      width={75}
       alt=""
+      draggable={isDraggable}
     />
   );
 };
