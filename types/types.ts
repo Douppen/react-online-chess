@@ -1,4 +1,4 @@
-import { PieceType, Square } from "chess.js";
+import { ChessInstance, PieceType, Square } from "chess.js";
 import { Timestamp } from "firebase/firestore";
 
 export interface UserDoc {
@@ -125,6 +125,13 @@ export type Vector = {
 };
 
 export type ClickHandler = ({ x, y }: { x: number; y: number }) => void;
+
+interface HandleMoveProps {
+  from: Vector;
+  to: Vector;
+}
+
+export type MoveHandler = (props: HandleMoveProps) => Promise<void>;
 
 export type GameModalProps = {
   isOpen: boolean;

@@ -416,16 +416,16 @@ export type InitiateGameProps = (props: {
   time: number;
   increment: number;
   username: string;
+  opponentUsername?: string;
 }) => Promise<string>;
 
-const initiateGame: InitiateGameProps = async ({
+export const initiateGame: InitiateGameProps = async ({
   color,
   time,
   increment,
   username,
+  opponentUsername,
 }) => {
-  console.log(color, time, increment, username);
-
   let gameType: ChessgameProps["gameType"];
   if (time <= 2) gameType = "bullet";
   else if (time <= 5) gameType = "blitz";
@@ -457,9 +457,19 @@ const initiateGame: InitiateGameProps = async ({
         elo: {
           initialRating: 1500,
         },
-        profileImage: "imageAddress",
+        profileImage: "default",
       },
-      b: null,
+      b: opponentUsername
+        ? {
+            username: opponentUsername,
+            country: "CA",
+            title: "none",
+            elo: {
+              initialRating: 1500,
+            },
+            profileImage: "default",
+          }
+        : null,
     };
   } else {
     playersObject = {
@@ -470,9 +480,19 @@ const initiateGame: InitiateGameProps = async ({
         elo: {
           initialRating: 1500,
         },
-        profileImage: "deault",
+        profileImage: "default",
       },
-      w: null,
+      w: opponentUsername
+        ? {
+            username: opponentUsername,
+            country: "CA",
+            title: "none",
+            elo: {
+              initialRating: 1500,
+            },
+            profileImage: "default",
+          }
+        : null,
     };
   }
 

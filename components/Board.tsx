@@ -1,12 +1,16 @@
 import { ChessInstance, Move, PieceType } from "chess.js";
+import { useEffect } from "react";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { posFromSquare } from "../lib/helpers";
-import { ClickHandler, Vector } from "../types/types";
+import { ClickHandler, MoveHandler, Vector } from "../types/types";
 import Background from "./Background";
 import Piece from "./Piece";
 
 type BoardProps = {
   gameInstance: ChessInstance;
-  onClickHandler: ClickHandler;
+  handleClick: ClickHandler;
+  handleMove: MoveHandler;
   clickedSquare: {
     pos: Vector;
     validMoves: Move[];
@@ -16,37 +20,23 @@ type BoardProps = {
 
 function Board({
   gameInstance,
-  onClickHandler,
+  handleClick,
   clickedSquare,
   player,
+  handleMove,
 }: BoardProps) {
-  const board = gameInstance.board();
-
   return (
-    <div className="relative order-2">
-      <Background
-        onClickHandler={onClickHandler}
-        clickedSquare={clickedSquare}
-        player={player}
-      />
-      <div className="w-[600px] h-[600px] absolute top-0 pointer-events-none">
-        {board.map((row) => {
-          return row.map((data, col) => {
-            if (data === null) return;
-            const pos = posFromSquare(data.square);
-            return (
-              <Piece
-                key={col}
-                type={data.type}
-                color={data.color}
-                pos={{ x: pos.x, y: 7 - pos.y }}
-                player={player}
-              />
-            );
-          });
-        })}
+    <DndProvider backend={HTML5Backend}>
+      <div className="relative order-2">
+        <Background
+          handleClick={handleClick}
+          handleMove={handleMove}
+          clickedSquare={clickedSquare}
+          player={player}
+          gameInstance={gameInstance}
+        />
       </div>
-    </div>
+    </DndProvider>
   );
 }
 

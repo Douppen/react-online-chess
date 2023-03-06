@@ -30,6 +30,8 @@
     "nookies": "^2.5.2",
     "npm": "^8.12.1",
     "react": "18.1.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "18.1.0",
     "react-firebase-hooks": "^5.0.3",
     "react-hot-toast": "^2.2.0",

@@ -20,6 +20,7 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { gamesCollection, makeRandomId } from "../lib/helpers";
+import { initiateGame } from "../pages";
 import { GameModalProps } from "../types/types";
 import CustomTextInput from "./CustomTextInput";
 
@@ -36,8 +37,8 @@ export default function GameEndModal({
     cause: "resign" | "timeout" | "checkmate" | "draw";
   };
   usernames: {
-    w: string | null;
-    b: string | null;
+    w?: string;
+    b?: string;
   };
   username: string | null | undefined;
 }) {
@@ -84,18 +85,23 @@ export default function GameEndModal({
       ) {
         if (gameCreator === username) {
           // Color should be the opposite of in the last game
-          const color = snapshot.data().players.w === username ? "b" : "w";
+          const color =
+            snapshot.data().players.w?.username === username ? "b" : "w";
           const time = snapshot.data().initialTime;
           const increment = snapshot.data().increment;
           let gameId: string;
-          initiateGame({ color, time, increment }).then((newGameId) => {
+          initiateGame({
+            username,
+            opponentUsername: opponentUsername!,
+            color,
+            time,
+            increment,
+          }).then((newGameId) => {
             gameId = newGameId;
             updateDoc(gameRef, {
               "result.rematchRequested.newGameId": newGameId,
             }).then(() => {
-              setTimeout(() => {
-                window.location.replace(`${gameId}`);
-              });
+              window.location.replace(`${gameId}`);
             });
           });
         }
@@ -147,62 +153,6 @@ export default function GameEndModal({
       });
     }
   }
-
-  const initiateGame = async ({
-    color,
-    time,
-    increment,
-  }: {
-    color: "w" | "b";
-    time: number;
-    increment: number;
-  }) => {
-    const opponentColor = color === "w" ? "b" : "w";
-    let gameId = makeRandomId(4);
-    let gameRef = doc(gamesCollection, gameId);
-
-    // Create a new game document in Firestore
-    let gameDoc = await getDoc(gameRef);
-    while (gameDoc.exists()) {
-      gameId = makeRandomId(4);
-      gameRef = doc(gamesCollection, gameId);
-      gameDoc = await getDoc(gameRef);
-    }
-
-    const timeLeftInMillis = time * 60 * 1000;
-    const nowInMillis = Timestamp.now().toMillis();
-    const endMillis = nowInMillis + timeLeftInMillis;
-    const endTimestamp = Timestamp.fromMillis(endMillis);
-
-    setDoc(gameRef, {
-      initialTime: time,
-      increment: increment,
-      ongoing: true,
-      started: true,
-      pgn: "",
-      //@ts-ignore
-      players: {
-        [color]: username,
-        [opponentColor]: opponentUsername,
-      },
-      gameCreator: username!,
-      result: null,
-      creationTimestamp: serverTimestamp(),
-      startTimestamp: serverTimestamp(),
-      endTimestamp: null,
-      timeTracker: {
-        w: {
-          endTimestamp,
-          remainingMillis: timeLeftInMillis,
-        },
-        b: {
-          endTimestamp,
-          remainingMillis: timeLeftInMillis,
-        },
-      },
-    });
-    return gameId;
-  };
 
   return (
     <Modal
